@@ -23,7 +23,7 @@ import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
-import { createClient } from "@/utils/supabase/client"; // Gunakan client untuk "use client"
+import { createClient } from "@/utils/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +33,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 const staticData = {
   navMain: [
@@ -42,24 +43,14 @@ const staticData = {
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Lifecycle",
+      title: "Data Pengajuan",
       url: "#",
       icon: ListIcon,
     },
     {
-      title: "Analytics",
+      title: "Arsip Surat",
       url: "#",
-      icon: BarChartIcon,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: FolderIcon,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: UsersIcon,
+      icon: FileTextIcon,
     },
   ],
   navClouds: [
@@ -164,7 +155,6 @@ export default function AppSidebar({
   React.useEffect(() => {
     async function getUser() {
       try {
-        // Get current authenticated user
         const {
           data: { user: authUser },
           error: authError,
@@ -176,15 +166,13 @@ export default function AppSidebar({
           return;
         }
 
-        // Option 1: Jika Anda punya tabel profiles terpisah
         const { data: profile, error: profileError } = await supabase
-          .from("profiles") // Sesuaikan dengan nama tabel profile Anda
+          .from("profiles")
           .select("*")
           .eq("id", authUser.id)
           .single();
 
         if (profileError) {
-          // Option 2: Jika tidak ada tabel profiles, gunakan data dari auth
           setUser({
             id: authUser.id,
             email: authUser.email || "",
@@ -199,7 +187,6 @@ export default function AppSidebar({
               "user",
           });
         } else {
-          // Jika ada tabel profiles
           setUser({
             id: profile.id,
             email: authUser.email || profile.email || "",
@@ -222,8 +209,6 @@ export default function AppSidebar({
     }
 
     getUser();
-
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -237,12 +222,11 @@ export default function AppSidebar({
     return () => subscription.unsubscribe();
   }, [supabase]);
 
-  // Format user data untuk NavUser component
   const userData = user
     ? {
         name: user.full_name || user.username || "User",
         email: user.email,
-        avatar: user.avatar_url || "/default-avatar.png", // Fallback avatar
+        avatar: user.avatar_url || "/default-avatar.png",
       }
     : null;
 
@@ -255,10 +239,12 @@ export default function AppSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/">
                 <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
+                <span className="text-base font-semibold">
+                  Sisurat Singopuran.
+                </span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -266,13 +252,10 @@ export default function AppSidebar({
 
       <SidebarContent>
         <NavMain items={staticData.navMain} />
-        <NavDocuments items={staticData.documents} />
-        <NavSecondary items={staticData.navSecondary} className="mt-auto" />
       </SidebarContent>
 
       <SidebarFooter>
         {loading ? (
-          // Loading state
           <div className="flex items-center space-x-2 px-2 py-1.5">
             <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
             <div className="flex flex-col space-y-1 flex-1">
@@ -283,7 +266,6 @@ export default function AppSidebar({
         ) : userData ? (
           <NavUser user={userData} />
         ) : (
-          // Fallback jika tidak ada user
           <div className="px-2 py-1.5 text-sm text-gray-500">
             No user logged in
           </div>

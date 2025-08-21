@@ -5,7 +5,6 @@ import {
   FileTextIcon,
   UsersIcon,
 } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -48,11 +47,12 @@ export function ApplicationsStats({ applications }: ApplicationsStatsProps) {
   }).length;
 
   return (
-    <div className="@xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-1 gap-4 px-4 lg:px-6">
-      <Card className="@container/card">
+    <div className="flex flex-wrap gap-4 px-4 lg:px-6 overflow-x-auto pb-2">
+      {/* Card 1: Total Permohonan */}
+      <Card className="min-w-[250px] flex-1">
         <CardHeader className="relative">
           <CardDescription>Total Permohonan</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+          <CardTitle className="text-2xl font-semibold tabular-nums">
             {stats.total}
           </CardTitle>
           <div className="absolute right-4 top-4">
@@ -70,10 +70,11 @@ export function ApplicationsStats({ applications }: ApplicationsStatsProps) {
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      {/* Card 2: Menunggu Persetujuan */}
+      <Card className="min-w-[250px] flex-1">
         <CardHeader className="relative">
           <CardDescription>Menunggu Persetujuan</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+          <CardTitle className="text-2xl font-semibold tabular-nums">
             {stats.pending}
           </CardTitle>
           <div className="absolute right-4 top-4">
@@ -94,10 +95,11 @@ export function ApplicationsStats({ applications }: ApplicationsStatsProps) {
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      {/* Card 3: Disetujui */}
+      <Card className="min-w-[250px] flex-1">
         <CardHeader className="relative">
           <CardDescription>Disetujui</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+          <CardTitle className="text-2xl font-semibold tabular-nums">
             {stats.approved}
           </CardTitle>
           <div className="absolute right-4 top-4">
@@ -120,10 +122,11 @@ export function ApplicationsStats({ applications }: ApplicationsStatsProps) {
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      {/* Card 4: Bulan Ini */}
+      <Card className="min-w-[250px] flex-1">
         <CardHeader className="relative">
           <CardDescription>Bulan Ini</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+          <CardTitle className="text-2xl font-semibold tabular-nums">
             {thisMonthApplications}
           </CardTitle>
           <div className="absolute right-4 top-4">

@@ -83,3 +83,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* custom css */
+.timeline-item:not(:last-child):after {
+  content: "";
+  position: absolute;
+  top: 32px;
+  bottom: -40px;
+  left: 19px;
+  width: 2px;
+  background-color: #e2e8f0;
+}

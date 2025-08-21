@@ -86,7 +86,7 @@ export default async function Signup(props: {
           </CardFooter>
         </form>
       </Card>
-      <p className="text-center text-xs text-muted-foreground">OR</p>
+      {/* <p className="text-center text-xs text-muted-foreground">OR</p>
       <Card className="w-full max-w-md border-none shadow-none">
         <form action={signInWithGoogleAction}>
           <CardFooter>
@@ -119,7 +119,7 @@ export default async function Signup(props: {
             </SubmitButton>
           </CardFooter>
         </form>
-      </Card>
+      </Card> */}
       <SmtpMessage />
     </div>
   );

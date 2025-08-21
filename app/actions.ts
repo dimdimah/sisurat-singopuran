@@ -583,6 +583,112 @@ export const getApplicationByIdAction = async (
   }
 };
 
+// Fungsi untuk mengambil data aplikasi dalam format yang cocok untuk chart
+// actions.ts
+export const getApplicationsForChart = async (): Promise<
+  { date: string; count: number }[]
+> => {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("applications")
+      .select("created_at")
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching applications:", error);
+      return [];
+    }
+
+    // Kelompokkan data per hari
+    const dailyCounts: Record<string, number> = {};
+
+    data?.forEach((app) => {
+      if (!app.created_at) return;
+
+      // Pastikan format tanggal konsisten (YYYY-MM-DD)
+      const date = new Date(app.created_at);
+      const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+      if (!dailyCounts[formattedDate]) {
+        dailyCounts[formattedDate] = 0;
+      }
+
+      dailyCounts[formattedDate] += 1;
+    });
+
+    // Konversi ke array dan tambahkan hari yang hilang
+    const result: { date: string; count: number }[] = [];
+    const dates = Object.keys(dailyCounts).sort();
+
+    if (dates.length > 0) {
+      const startDate = new Date(dates[0]);
+      const endDate = new Date(dates[dates.length - 1]);
+
+      // Iterasi setiap hari dalam rentang
+      for (
+        let d = new Date(startDate);
+        d <= endDate;
+        d.setDate(d.getDate() + 1)
+      ) {
+        const dateStr = d.toISOString().split("T")[0];
+        result.push({
+          date: dateStr,
+          count: dailyCounts[dateStr] || 0,
+        });
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return [];
+  }
+};
+
+// Fungsi untuk mendapatkan statistik aplikasi per bulan
+export const getMonthlyApplications = async (): Promise<
+  { month: string; count: number }[]
+> => {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("applications")
+      .select("created_at");
+
+    if (error) {
+      console.error("Error fetching applications:", error);
+      return [];
+    }
+
+    // Kelompokkan data per bulan
+    const monthlyCounts: Record<string, number> = {};
+
+    data?.forEach((app) => {
+      const date = new Date(app.created_at);
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; // Format YYYY-MM
+
+      if (!monthlyCounts[month]) {
+        monthlyCounts[month] = 0;
+      }
+
+      monthlyCounts[month] += 1;
+    });
+
+    // Konversi ke array dan urutkan
+    const result = Object.entries(monthlyCounts)
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
+    return result;
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return [];
+  }
+};
+
 // UPDATE APPLICATION STATUS ACTION
 export const updateApplicationStatusAction = async (formData: FormData) => {
   const supabase = await createClient();

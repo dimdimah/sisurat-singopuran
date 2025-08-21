@@ -1,4 +1,4 @@
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -7,12 +7,12 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "E-surat Singopuran",
+  title: "Esurat Singopuran",
   description:
     "Membantu melayani anda dalam pembuatan surat keterangan desa lebih cepat",
 };
 
-const geistSans = Geist({
+const geistSans = Inter({
   display: "swap",
   subsets: ["latin"],
 });

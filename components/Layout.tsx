@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Head from "next/head";
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -21,12 +22,27 @@ import Footer from "./footer";
 interface LayoutProps {
   children: ReactNode;
   title?: string;
+  description?: string;
 }
 
-export default function Layout({ children, title = "My App" }: LayoutProps) {
+export default function Layout({
+  children,
+  title = "My App",
+  description = "Aplikasi layanan surat menyurat",
+}: LayoutProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    document.title = title;
+
+    // Update meta description
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", description);
+    }
+  }, [title, description]);
 
   useEffect(() => {
     setMounted(true);
@@ -98,57 +114,54 @@ export default function Layout({ children, title = "My App" }: LayoutProps) {
 
   return (
     <div className="grid min-h-screen grid-rows-[auto_1fr] w-full">
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+      </Head>
       <header
         className={`sticky top-0 z-50 w-full backdrop-blur-lg transition-all duration-300 ${
           isScrolled ? "bg-stone-100/80 shadow-sm" : "bg-transparent"
         }`}
       >
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
+        <div className="container flex h-14 items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-bold leading-none"
+          >
+            <div className="size-7 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
               SE
             </div>
-            <span>Singopuran</span>
+            <span className="text-sm font-semibold">Singopuran</span>
           </Link>
           <nav className="hidden md:flex gap-8">
             <Link
-              href="#features"
+              href="/"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Features
+              Beranda
             </Link>
             <Link
-              href="#testimonials"
+              href="/panduan"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Testimonials
+              Panduan
             </Link>
             <Link
-              href="#pricing"
+              href="/layanan"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Pricing
-            </Link>
-            <Link
-              href="#faq"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              FAQ
+              Layanan
             </Link>
           </nav>
           <div className="hidden md:flex gap-4 items-center">
             <Link
-              href="/sign-in"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              href="/tentang"
+              className="rounded-full mx-2 flex items-center bg-black text-white px-4 py-2 text-sm hover:bg-stone-800 transition-colors duration-200 group"
             >
-              Log in
-            </Link>
-            <Link
-              href="/surat"
-              className="rounded-full mx-2 flex items-center bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors duration-200 group"
-            >
-              Get Started
-              <ChevronRight className="ml-1 size-4 transition-all duration-500 ease-in-out group-hover:translate-x-2 group-hover:animate-pulse" />
+              Tentang Kami
+              <ChevronRight className="ml-1 size-4" />
             </Link>
           </div>
           <div className="flex items-center gap-4 md:hidden">
@@ -172,48 +185,34 @@ export default function Layout({ children, title = "My App" }: LayoutProps) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden absolute top-16 inset-x-0 bg-background/95 backdrop-blur-lg border-b"
+            className="md:hidden absolute top-full inset-x-0 bg-background/95 backdrop-blur-lg border-b"
           >
-            <div className="container py-4 flex flex-col gap-4">
+            <div className="container py-3 flex flex-col gap-3">
               <Link
-                href="#features"
+                href="/"
                 className="py-2 text-sm font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Features
+                Beranda
               </Link>
               <Link
-                href="#testimonials"
+                href="/panduan"
                 className="py-2 text-sm font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Testimonials
+                Panduan
               </Link>
               <Link
-                href="#pricing"
+                href="/layanan"
                 className="py-2 text-sm font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Pricing
-              </Link>
-              <Link
-                href="#faq"
-                className="py-2 text-sm font-medium"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                FAQ
+                Layanan
               </Link>
               <div className="flex flex-col gap-2 pt-2 border-t">
-                <Link
-                  href="#"
-                  className="py-2 text-sm font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Log in
-                </Link>
                 <Button className="rounded-full">
-                  <Link href={"/surat"} className="flex items-center">
-                    Get Started
+                  <Link href={"/tentang"} className="flex items-center">
+                    Tentang Kami
                     <ChevronRight className="ml-1 size-4" />
                   </Link>
                 </Button>

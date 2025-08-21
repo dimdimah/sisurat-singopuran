@@ -3,11 +3,10 @@ import React from "react";
 
 export default function page() {
   return (
-    <Layout
-      title="Schedule Em"
-      description="Jadwal kegiatan terbaru desa Singopuran"
-    >
-      page
+    <Layout>
+      <div>
+        <p>tentang page</p>
+      </div>
     </Layout>
   );
 }

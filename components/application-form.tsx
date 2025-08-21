@@ -51,7 +51,14 @@ const formSchema = z.object({
   keteranganLain: z.string().optional(),
 });
 
-export default function ApplicationFormServer() {
+// Tambahkan interface untuk props
+interface ApplicationFormServerProps {
+  isSubmitDisabled: boolean;
+}
+
+export default function ApplicationFormServer({
+  isSubmitDisabled,
+}: ApplicationFormServerProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -355,7 +362,11 @@ export default function ApplicationFormServer() {
             )}
           />
 
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting || isSubmitDisabled}
+            className="w-full"
+          >
             {form.formState.isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
