@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { PlusIcon } from "lucide-react";
+import { useTransition } from "react";
+import { PlusIcon, CalendarIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +27,86 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createApplicationAction } from "@/app/actions";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { createApplicationActionForClient } from "@/app/actions";
 
 export function AddApplicationDialog() {
   const [open, setOpen] = React.useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [tanggalLahir, setTanggalLahir] = React.useState<Date | undefined>(
+    undefined
+  );
+  const [berlakuSurat, setBerlakuSurat] = React.useState<Date | undefined>(
+    undefined
+  );
+  const router = useRouter();
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const { toast } = useToast();
+
+  // Reset form and date states when dialog is closed
+  React.useEffect(() => {
+    if (!open && formRef.current) {
+      formRef.current.reset();
+      setTanggalLahir(undefined);
+      setBerlakuSurat(undefined);
+    }
+  }, [open]);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
+
+    // Validate date fields
+    if (!tanggalLahir) {
+      toast({
+        title: "Error",
+        description: "Tanggal lahir harus diisi",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!berlakuSurat) {
+      toast({
+        title: "Error",
+        description: "Tanggal berlaku harus diisi",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Append date fields to FormData
+    formData.set("tanggalLahir", tanggalLahir.toISOString().split("T")[0]);
+    formData.set("berlakuSurat", berlakuSurat.toISOString().split("T")[0]);
+
+    startTransition(async () => {
+      const result = await createApplicationActionForClient(formData);
+      if (result.success) {
+        toast({
+          title: "Berhasil",
+          description: "Berhasil menambahkan data baru",
+          variant: "default",
+        });
+        setOpen(false);
+        if (formRef.current) {
+          formRef.current.reset();
+        }
+        router.refresh();
+      } else {
+        toast({
+          title: "Gagal",
+          description:
+            result.error || "Terjadi kesalahan saat menambahkan data",
+          variant: "destructive",
+        });
+      }
+    });
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -42,8 +123,7 @@ export function AddApplicationDialog() {
             Isi formulir di bawah untuk menambahkan permohonan warga baru.
           </DialogDescription>
         </DialogHeader>
-        <form action={createApplicationAction} className="space-y-6">
-          {/* Personal Information */}
+        <form ref={formRef} onSubmit={onSubmit} className="space-y-6">
           <div className="space-y-4">
             <h3 className="font-semibold">Data Pribadi</h3>
             <div className="grid gap-4">
@@ -67,13 +147,34 @@ export function AddApplicationDialog() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="tanggalLahir">Tanggal Lahir *</Label>
-                  <Input
-                    id="tanggalLahir"
-                    name="tanggalLahir"
-                    type="date"
-                    required
-                  />
+                  <Label>Tanggal Lahir *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !tanggalLahir && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tanggalLahir
+                          ? format(tanggalLahir, "dd MMMM yyyy", { locale: id })
+                          : "Pilih tanggal lahir"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-[1000]">
+                      <Calendar
+                        mode="single"
+                        selected={tanggalLahir}
+                        onSelect={setTanggalLahir}
+                        fromYear={1900}
+                        toYear={new Date().getFullYear()}
+                        captionLayout="dropdown"
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -126,8 +227,6 @@ export function AddApplicationDialog() {
               </div>
             </div>
           </div>
-
-          {/* Identity Document */}
           <div className="space-y-4">
             <h3 className="font-semibold">Dokumen Identitas</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -139,9 +238,6 @@ export function AddApplicationDialog() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="KTP">KTP</SelectItem>
-                    <SelectItem value="SIM">SIM</SelectItem>
-                    <SelectItem value="Paspor">Paspor</SelectItem>
-                    <SelectItem value="Kartu Pelajar">Kartu Pelajar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -156,8 +252,6 @@ export function AddApplicationDialog() {
               </div>
             </div>
           </div>
-
-          {/* Application Details */}
           <div className="space-y-4">
             <h3 className="font-semibold">Detail Permohonan</h3>
             <div className="grid gap-4">
@@ -208,13 +302,32 @@ export function AddApplicationDialog() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="berlakuSurat">Berlaku Hingga *</Label>
-                <Input
-                  id="berlakuSurat"
-                  name="berlakuSurat"
-                  type="date"
-                  required
-                />
+                <Label>Berlaku Hingga *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !berlakuSurat && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {berlakuSurat
+                        ? format(berlakuSurat, "dd MMMM yyyy", { locale: id })
+                        : "Pilih tanggal berlaku"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[1000]">
+                    <Calendar
+                      mode="single"
+                      selected={berlakuSurat}
+                      onSelect={setBerlakuSurat}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="keteranganLain">Keterangan Tambahan</Label>
@@ -226,15 +339,15 @@ export function AddApplicationDialog() {
               </div>
             </div>
           </div>
-
           <div className="flex gap-2 pt-4">
-            <Button type="submit" className="flex-1">
-              Simpan Permohonan
+            <Button type="submit" disabled={isPending} className="flex-1">
+              {isPending ? "Menyimpan..." : "Simpan Permohonan"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              disabled={isPending}
             >
               Batal
             </Button>

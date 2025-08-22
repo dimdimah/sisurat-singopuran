@@ -39,17 +39,17 @@ const staticData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/protected",
       icon: LayoutDashboardIcon,
     },
     {
       title: "Data Pengajuan",
-      url: "#",
+      url: "/protected/data-pengajuan",
       icon: ListIcon,
     },
     {
       title: "Arsip Surat",
-      url: "#",
+      url: "/protected/arsip-surat",
       icon: FileTextIcon,
     },
   ],

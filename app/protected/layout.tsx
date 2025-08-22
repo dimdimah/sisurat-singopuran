@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { Geist } from "next/font/google";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import HeaderAuth from "@/components/header-auth";
-import AuthButton from "@/components/header-auth";
+import { Toaster } from "@/components/ui/toaster";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -26,5 +23,10 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  return <main>{children}</main>;
+  return (
+    <main>
+      {children}
+      <Toaster />
+    </main>
+  );
 }

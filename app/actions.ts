@@ -5,6 +5,29 @@ import { encodedRedirect } from "@/utils/utils";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
+
+// TYPES AND INTERFACES
+export interface ApplicationArchive {
+  id?: number;
+  application_id?: number;
+  namaWarga: string;
+  tempatLahir: string;
+  tanggalLahir: string;
+  kewarganegaraan: string;
+  agama: string;
+  pekerjaan: string;
+  alamatTinggal: string;
+  suratBuktiDiri: string;
+  nomorBuktiDiri: string;
+  tujuan: string;
+  keperluan: string;
+  berlakuSurat: string;
+  keteranganLain?: string;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface ApplicationData {
   id?: number;
@@ -26,7 +49,50 @@ export interface ApplicationData {
   updated_at?: string;
 }
 
-// Database type for mapping
+// HELPER INSERT DATA PENGAJUAN
+async function insertApplication(applicationData: any) {
+  const supabase = await createClient();
+
+  try {
+    const nomorSurat = await generateNomorSurat();
+    const tanggalLahirISO = new Date(
+      applicationData.tanggalLahir
+    ).toISOString();
+    const berlakuSuratISO = new Date(
+      applicationData.berlakuSurat
+    ).toISOString();
+
+    const { error } = await supabase.from("applications").insert({
+      nama_warga: applicationData.namaWarga,
+      tempat_lahir: applicationData.tempatLahir,
+      tanggal_lahir: tanggalLahirISO,
+      kewarganegaraan: applicationData.kewarganegaraan,
+      agama: applicationData.agama,
+      pekerjaan: applicationData.pekerjaan,
+      alamat_tinggal: applicationData.alamatTinggal,
+      surat_bukti_diri: applicationData.suratBuktiDiri,
+      nomor_bukti_diri: applicationData.nomorBuktiDiri,
+      tujuan: applicationData.tujuan,
+      keperluan: applicationData.keperluan,
+      berlaku_surat: berlakuSuratISO,
+      keterangan_lain: applicationData.keteranganLain,
+      status: "pending",
+      nomor_surat: nomorSurat,
+    });
+
+    if (error) {
+      console.error("Database error:", error);
+      return { success: false, error: `Gagal menyimpan: ${error.message}` };
+    }
+
+    revalidatePath("/protected");
+    return { success: true, message: "Permohonan berhasil ditambahkan!" };
+  } catch (error: any) {
+    console.error("Error in insertApplication:", error);
+    return { success: false, error: "Terjadi kesalahan server." };
+  }
+}
+
 export type DatabaseApplication = {
   id: number;
   nama_warga: string;
@@ -47,8 +113,10 @@ export type DatabaseApplication = {
   updated_at: string;
 };
 
-// Convert database format to interface format
-function mapDatabaseToInterface(dbApp: DatabaseApplication): ApplicationData {
+// UTILITY FUNCTIONS
+const mapDatabaseToInterface = (
+  dbApp: DatabaseApplication
+): ApplicationData => {
   return {
     id: dbApp.id,
     namaWarga: dbApp.nama_warga,
@@ -68,15 +136,102 @@ function mapDatabaseToInterface(dbApp: DatabaseApplication): ApplicationData {
     created_at: dbApp.created_at,
     updated_at: dbApp.updated_at,
   };
-}
+};
+
+const validateApplicationData = (data: any) => {
+  const requiredFields = [
+    "namaWarga",
+    "tempatLahir",
+    "tanggalLahir",
+    "agama",
+    "pekerjaan",
+    "alamatTinggal",
+    "suratBuktiDiri",
+    "nomorBuktiDiri",
+    "tujuan",
+    "keperluan",
+    "berlakuSurat",
+  ];
+
+  const missing = requiredFields.filter((field) => !data[field]);
+
+  if (missing.length > 0) {
+    return {
+      isValid: false,
+      error: `Field wajib diisi: ${missing.join(", ")}`,
+    };
+  }
+
+  // Validasi tanggal
+  try {
+    new Date(data.tanggalLahir).toISOString();
+    new Date(data.berlakuSurat).toISOString();
+  } catch {
+    return { isValid: false, error: "Format tanggal tidak valid." };
+  }
+
+  return { isValid: true, error: null };
+};
+
+const parseFormData = (formData: FormData) => {
+  return {
+    namaWarga: formData.get("namaWarga")?.toString().trim() || "",
+    tempatLahir: formData.get("tempatLahir")?.toString().trim() || "",
+    tanggalLahir: formData.get("tanggalLahir")?.toString().trim() || "",
+    kewarganegaraan:
+      formData.get("kewarganegaraan")?.toString().trim() || "Indonesia",
+    agama: formData.get("agama")?.toString().trim() || "",
+    pekerjaan: formData.get("pekerjaan")?.toString().trim() || "",
+    alamatTinggal: formData.get("alamatTinggal")?.toString().trim() || "",
+    suratBuktiDiri: formData.get("suratBuktiDiri")?.toString().trim() || "",
+    nomorBuktiDiri: formData.get("nomorBuktiDiri")?.toString().trim() || "",
+    tujuan: formData.get("tujuan")?.toString().trim() || "",
+    keperluan: formData.get("keperluan")?.toString().trim() || "",
+    berlakuSurat: formData.get("berlakuSurat")?.toString().trim() || "",
+    keteranganLain: formData.get("keteranganLain")?.toString().trim() || "",
+  };
+};
+
+const generateNomorSurat = async (): Promise<string> => {
+  const supabase = await createClient();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  const bulanRomawi = [
+    "",
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "X",
+    "XI",
+    "XII",
+  ];
+
+  const { count, error } = await supabase
+    .from("applications")
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", `${year}-${String(month).padStart(2, "0")}-01`)
+    .lte("created_at", `${year}-${String(month).padStart(2, "0")}-31`);
+
+  if (error) throw new Error("Gagal menghitung nomor urut");
+
+  const nomorUrut = (count ?? 0) + 1;
+  const kodeSurat = "474";
+  return `${kodeSurat}/${String(nomorUrut).padStart(3, "0")}/${bulanRomawi[month]}/${year}`;
+};
 
 // AUTHENTICATION ACTIONS
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const fullName = formData.get("full_name")?.toString();
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
 
   if (!email || !password) {
     return encodedRedirect(
@@ -85,6 +240,9 @@ export const signUpAction = async (formData: FormData) => {
       "Email and password are required"
     );
   }
+
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin");
 
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
@@ -100,7 +258,6 @@ export const signUpAction = async (formData: FormData) => {
   }
 
   const userId = authData.user?.id;
-
   if (userId) {
     const { error: profileError } = await supabase.from("profiles").insert({
       id: userId,
@@ -125,9 +282,17 @@ export const signUpAction = async (formData: FormData) => {
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+
+  if (!email || !password) {
+    return encodedRedirect(
+      "error",
+      "/sign-in",
+      "Email and password are required"
+    );
+  }
+
   const supabase = await createClient();
 
-  // Melakukan sign in dengan Supabase Auth
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -137,11 +302,8 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  // Mendapatkan user ID dari hasil sign in
   const userId = authData.user?.id;
-
   if (userId) {
-    // Mengambil data role dari tabel profiles
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("role")
@@ -157,22 +319,14 @@ export const signInAction = async (formData: FormData) => {
       );
     }
 
-    // Pengecekan role dan redirect ke halaman yang sesuai
-    if (profileData && profileData.role) {
-      switch (profileData.role) {
-        case "admin":
-          return redirect("/protected");
-        default:
-          return redirect("/sign-in");
-      }
+    if (profileData?.role === "admin") {
+      return redirect("/protected");
     }
   }
 
-  // Default redirect jika tidak ada kondisi khusus
   return redirect("/protected");
 };
 
-// SIGN IN WITH GOOGLE ACTION
 export const signInWithGoogleAction = async () => {
   const supabase = await createClient();
   const origin =
@@ -192,16 +346,16 @@ export const signInWithGoogleAction = async () => {
   return redirect(data.url);
 };
 
-// FORGOT PASSWORD ACTION
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-  const callbackUrl = formData.get("callbackUrl")?.toString();
 
   if (!email) {
     return encodedRedirect("error", "/forgot-password", "Email is required");
   }
+
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin");
+  const callbackUrl = formData.get("callbackUrl")?.toString();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/callback?redirect_to=/protected/reset-password`,
@@ -227,15 +381,12 @@ export const forgotPasswordAction = async (formData: FormData) => {
   );
 };
 
-// RESET PASSWORD ACTION
 export const resetPasswordAction = async (formData: FormData) => {
-  const supabase = await createClient();
-
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
 
   if (!password || !confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/protected/reset-password",
       "Password and confirm password are required"
@@ -243,37 +394,39 @@ export const resetPasswordAction = async (formData: FormData) => {
   }
 
   if (password !== confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/protected/reset-password",
       "Passwords do not match"
     );
   }
 
-  const { error } = await supabase.auth.updateUser({
-    password: password,
-  });
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/protected/reset-password",
       "Password update failed"
     );
   }
 
-  encodedRedirect("success", "/protected/reset-password", "Password updated");
+  return encodedRedirect(
+    "success",
+    "/protected/reset-password",
+    "Password updated"
+  );
 };
 
-// SIGN OUT ACTION
 export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
 
-// GET USER PROFILE BY AUTH
-export async function getUserProfile() {
+// USER PROFILE ACTIONS
+export const getUserProfile = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -288,11 +441,10 @@ export async function getUserProfile() {
     .single();
 
   return profile;
-}
+});
 
-export const getUserProfileData = async () => {
+export const getUserProfileData = cache(async () => {
   const supabase = await createClient();
-
   const {
     data: { user },
     error,
@@ -302,120 +454,29 @@ export const getUserProfileData = async () => {
 
   return {
     name: user.user_metadata?.full_name || "Guest",
-    email: user.email ?? "guest@example.com", // ✅ tambahkan fallback
+    email: user.email ?? "guest@example.com",
     avatar:
       user.user_metadata?.avatar_url ||
       user.user_metadata?.picture ||
-      "/default-avatar.png", // ✅ fallback ke default
+      "/default-avatar.png",
   };
-};
+});
 
-// CREATE NOMOR SURAT ACTION
-async function generateNomorSurat(): Promise<string> {
-  const supabase = await createClient();
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-
-  const bulanRomawi = [
-    "",
-    "I",
-    "II",
-    "III",
-    "IV",
-    "V",
-    "VI",
-    "VII",
-    "VIII",
-    "IX",
-    "X",
-    "XI",
-    "XII",
-  ];
-
-  // Hitung jumlah surat bulan ini
-  const { count, error } = await supabase
-    .from("applications")
-    .select("id", { count: "exact", head: true })
-    .gte("created_at", `${year}-${String(month).padStart(2, "0")}-01`)
-    .lte("created_at", `${year}-${String(month).padStart(2, "0")}-31`);
-
-  if (error) throw new Error("Gagal menghitung nomor urut");
-
-  const nomorUrut = (count ?? 0) + 1;
-  const kodeSurat = "474";
-  const nomorSurat = `${kodeSurat}/${String(nomorUrut).padStart(3, "0")}/${bulanRomawi[month]}/${year}`;
-
-  return nomorSurat;
-}
-
-// CREATE APPLICATION ACTION FOR USERS
+// APPLICATION CRUD ACTIONS
 export const createApplicationUsers = async (formData: FormData) => {
-  const supabase = await createClient();
+  const applicationData = parseFormData(formData);
+  const validation = validateApplicationData(applicationData);
 
-  const applicationData = {
-    namaWarga: formData.get("namaWarga")?.toString().trim() || "",
-    tempatLahir: formData.get("tempatLahir")?.toString().trim() || "",
-    tanggalLahir: formData.get("tanggalLahir")?.toString().trim() || "",
-    kewarganegaraan:
-      formData.get("kewarganegaraan")?.toString().trim() || "Indonesia",
-    agama: formData.get("agama")?.toString().trim() || "",
-    pekerjaan: formData.get("pekerjaan")?.toString().trim() || "",
-    alamatTinggal: formData.get("alamatTinggal")?.toString().trim() || "",
-    suratBuktiDiri: formData.get("suratBuktiDiri")?.toString().trim() || "",
-    nomorBuktiDiri: formData.get("nomorBuktiDiri")?.toString().trim() || "",
-    tujuan: formData.get("tujuan")?.toString().trim() || "",
-    keperluan: formData.get("keperluan")?.toString().trim() || "",
-    berlakuSurat: formData.get("berlakuSurat")?.toString().trim() || "",
-    keteranganLain: formData.get("keteranganLain")?.toString().trim() || "",
-  };
-
-  const requiredFields = [
-    "namaWarga",
-    "tempatLahir",
-    "tanggalLahir",
-    "agama",
-    "pekerjaan",
-    "alamatTinggal",
-    "suratBuktiDiri",
-    "nomorBuktiDiri",
-    "tujuan",
-    "keperluan",
-    "berlakuSurat",
-  ];
-
-  const missing = requiredFields.filter(
-    (field) => !applicationData[field as keyof typeof applicationData]
-  );
-
-  if (missing.length > 0) {
-    return {
-      success: false,
-      error: `Field wajib diisi: ${missing.join(", ")}`,
-    };
-  }
-
-  // Validasi tanggal
-  try {
-    new Date(applicationData.tanggalLahir).toISOString();
-    new Date(applicationData.berlakuSurat).toISOString();
-  } catch {
-    return { success: false, error: "Format tanggal tidak valid." };
+  if (!validation.isValid) {
+    return { success: false, error: validation.error };
   }
 
   try {
-    const tanggalLahirISO = new Date(
-      applicationData.tanggalLahir
-    ).toISOString();
-    const berlakuSuratISO = new Date(
-      applicationData.berlakuSurat
-    ).toISOString();
-    // const nomorSurat = await generateNomorSurat();
-
+    const supabase = await createClient();
     const { error } = await supabase.from("applications").insert({
       nama_warga: applicationData.namaWarga,
       tempat_lahir: applicationData.tempatLahir,
-      tanggal_lahir: tanggalLahirISO,
+      tanggal_lahir: new Date(applicationData.tanggalLahir).toISOString(),
       kewarganegaraan: applicationData.kewarganegaraan,
       agama: applicationData.agama,
       pekerjaan: applicationData.pekerjaan,
@@ -424,10 +485,9 @@ export const createApplicationUsers = async (formData: FormData) => {
       nomor_bukti_diri: applicationData.nomorBuktiDiri,
       tujuan: applicationData.tujuan,
       keperluan: applicationData.keperluan,
-      berlaku_surat: berlakuSuratISO,
+      berlaku_surat: new Date(applicationData.berlakuSurat).toISOString(),
       keterangan_lain: applicationData.keteranganLain,
       status: "pending",
-      // nomor_surat: nomorSurat,
     });
 
     if (error) {
@@ -441,320 +501,47 @@ export const createApplicationUsers = async (formData: FormData) => {
   }
 };
 
-// CREATE APPLICATION ACTION FOR ADMIN
 export const createApplicationAction = async (formData: FormData) => {
-  const supabase = await createClient();
+  const applicationData = parseFormData(formData);
+  const validation = validateApplicationData(applicationData);
 
-  const applicationData = {
-    namaWarga: formData.get("namaWarga")?.toString().trim() || "",
-    tempatLahir: formData.get("tempatLahir")?.toString().trim() || "",
-    tanggalLahir: formData.get("tanggalLahir")?.toString().trim() || "",
-    kewarganegaraan:
-      formData.get("kewarganegaraan")?.toString().trim() || "Indonesia",
-    agama: formData.get("agama")?.toString().trim() || "",
-    pekerjaan: formData.get("pekerjaan")?.toString().trim() || "",
-    alamatTinggal: formData.get("alamatTinggal")?.toString().trim() || "",
-    suratBuktiDiri: formData.get("suratBuktiDiri")?.toString().trim() || "",
-    nomorBuktiDiri: formData.get("nomorBuktiDiri")?.toString().trim() || "",
-    tujuan: formData.get("tujuan")?.toString().trim() || "",
-    keperluan: formData.get("keperluan")?.toString().trim() || "",
-    berlakuSurat: formData.get("berlakuSurat")?.toString().trim() || "",
-    keteranganLain: formData.get("keteranganLain")?.toString().trim() || "",
-  };
+  if (!validation.isValid) {
+    return encodedRedirect("error", "/protected", validation.error!);
+  }
 
-  const requiredFields = [
-    "namaWarga",
-    "tempatLahir",
-    "tanggalLahir",
-    "agama",
-    "pekerjaan",
-    "alamatTinggal",
-    "suratBuktiDiri",
-    "nomorBuktiDiri",
-    "tujuan",
-    "keperluan",
-    "berlakuSurat",
-  ];
+  const result = await insertApplication(applicationData);
 
-  const missing = requiredFields.filter(
-    (field) => !applicationData[field as keyof typeof applicationData]
-  );
-
-  if (missing.length > 0) {
-    return encodedRedirect(
-      "error",
-      "/protected",
-      `Field wajib diisi: ${missing.join(", ")}`
+  if (result.success) {
+    return redirect(
+      "/protected?success=" +
+        encodeURIComponent("Permohonan berhasil ditambahkan!")
     );
-  }
-
-  try {
-    const tanggalLahirISO = new Date(
-      applicationData.tanggalLahir
-    ).toISOString();
-    const berlakuSuratISO = new Date(
-      applicationData.berlakuSurat
-    ).toISOString();
-
-    const nomorSurat = await generateNomorSurat();
-
-    const { error } = await supabase.from("applications").insert({
-      nama_warga: applicationData.namaWarga,
-      tempat_lahir: applicationData.tempatLahir,
-      tanggal_lahir: tanggalLahirISO,
-      kewarganegaraan: applicationData.kewarganegaraan,
-      agama: applicationData.agama,
-      pekerjaan: applicationData.pekerjaan,
-      alamat_tinggal: applicationData.alamatTinggal,
-      surat_bukti_diri: applicationData.suratBuktiDiri,
-      nomor_bukti_diri: applicationData.nomorBuktiDiri,
-      tujuan: applicationData.tujuan,
-      keperluan: applicationData.keperluan,
-      berlaku_surat: berlakuSuratISO,
-      keterangan_lain: applicationData.keteranganLain,
-      status: "pending",
-      nomor_surat: nomorSurat,
-    });
-
-    if (error) {
-      return encodedRedirect(
-        "error",
-        "/protected",
-        `Gagal menyimpan: ${error.message}`
-      );
-    }
-
-    revalidatePath("/protected");
-    return encodedRedirect(
-      "success",
-      "/protected",
-      "Permohonan berhasil ditambahkan!"
-    );
-  } catch (e) {
-    console.error(e);
-    return encodedRedirect("error", "/protected", "Terjadi kesalahan server.");
+  } else {
+    return encodedRedirect("error", "/protected", result.error!);
   }
 };
 
-// GET ALL APPLICATIONS ACTION
-export const getApplicationsAction = async (): Promise<ApplicationData[]> => {
-  const supabase = await createClient();
+// Fungsi baru khusus untuk client (tanpa redirect)
+export const createApplicationActionForClient = async (formData: FormData) => {
+  const applicationData = parseFormData(formData);
+  const validation = validateApplicationData(applicationData);
 
-  try {
-    const { data, error } = await supabase
-      .from("applications")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching applications:", error);
-      return [];
-    }
-
-    return (data || []).map(mapDatabaseToInterface);
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return [];
+  if (!validation.isValid) {
+    return { success: false, error: validation.error! };
   }
+
+  return await insertApplication(applicationData);
 };
 
-// GET APPLICATION BY ID ACTION
-export const getApplicationByIdAction = async (
-  id: string
-): Promise<ApplicationData | null> => {
-  const supabase = await createClient();
-
-  try {
-    const { data, error } = await supabase
-      .from("applications")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      console.error("Error fetching application:", error);
-      return null;
-    }
-
-    return data ? mapDatabaseToInterface(data) : null;
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return null;
-  }
-};
-
-// Fungsi untuk mengambil data aplikasi dalam format yang cocok untuk chart
-// actions.ts
-export const getApplicationsForChart = async (): Promise<
-  { date: string; count: number }[]
-> => {
-  const supabase = await createClient();
-
-  try {
-    const { data, error } = await supabase
-      .from("applications")
-      .select("created_at")
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching applications:", error);
-      return [];
-    }
-
-    // Kelompokkan data per hari
-    const dailyCounts: Record<string, number> = {};
-
-    data?.forEach((app) => {
-      if (!app.created_at) return;
-
-      // Pastikan format tanggal konsisten (YYYY-MM-DD)
-      const date = new Date(app.created_at);
-      const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-      if (!dailyCounts[formattedDate]) {
-        dailyCounts[formattedDate] = 0;
-      }
-
-      dailyCounts[formattedDate] += 1;
-    });
-
-    // Konversi ke array dan tambahkan hari yang hilang
-    const result: { date: string; count: number }[] = [];
-    const dates = Object.keys(dailyCounts).sort();
-
-    if (dates.length > 0) {
-      const startDate = new Date(dates[0]);
-      const endDate = new Date(dates[dates.length - 1]);
-
-      // Iterasi setiap hari dalam rentang
-      for (
-        let d = new Date(startDate);
-        d <= endDate;
-        d.setDate(d.getDate() + 1)
-      ) {
-        const dateStr = d.toISOString().split("T")[0];
-        result.push({
-          date: dateStr,
-          count: dailyCounts[dateStr] || 0,
-        });
-      }
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return [];
-  }
-};
-
-// Fungsi untuk mendapatkan statistik aplikasi per bulan
-export const getMonthlyApplications = async (): Promise<
-  { month: string; count: number }[]
-> => {
-  const supabase = await createClient();
-
-  try {
-    const { data, error } = await supabase
-      .from("applications")
-      .select("created_at");
-
-    if (error) {
-      console.error("Error fetching applications:", error);
-      return [];
-    }
-
-    // Kelompokkan data per bulan
-    const monthlyCounts: Record<string, number> = {};
-
-    data?.forEach((app) => {
-      const date = new Date(app.created_at);
-      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; // Format YYYY-MM
-
-      if (!monthlyCounts[month]) {
-        monthlyCounts[month] = 0;
-      }
-
-      monthlyCounts[month] += 1;
-    });
-
-    // Konversi ke array dan urutkan
-    const result = Object.entries(monthlyCounts)
-      .map(([month, count]) => ({ month, count }))
-      .sort((a, b) => a.month.localeCompare(b.month));
-
-    return result;
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return [];
-  }
-};
-
-// UPDATE APPLICATION STATUS ACTION
-export const updateApplicationStatusAction = async (formData: FormData) => {
-  const supabase = await createClient();
-  const id = formData.get("id")?.toString();
-  const status = formData.get("status")?.toString();
-
-  if (!id || !status) {
-    return encodedRedirect("error", "/protected", "ID dan status harus diisi");
-  }
-
-  try {
-    const { error } = await supabase
-      .from("applications")
-      .update({ status })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error updating application status:", error);
-      return encodedRedirect(
-        "error",
-        "/protected",
-        "Gagal mengupdate status pengajuan"
-      );
-    }
-
-    revalidatePath("/protected");
-    return encodedRedirect(
-      "success",
-      "/protected",
-      "Status pengajuan berhasil diupdate!"
-    );
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return encodedRedirect(
-      "error",
-      "/protected",
-      "Terjadi kesalahan yang tidak terduga"
-    );
-  }
-};
-
-// UPDATE APPLICATION ACTION
 export const updateApplicationAction = async (formData: FormData) => {
-  const supabase = await createClient();
   const id = formData.get("id")?.toString();
 
   if (!id) {
     return encodedRedirect("error", "/protected", "ID pengajuan harus diisi");
   }
 
-  const applicationData = {
-    namaWarga: formData.get("namaWarga")?.toString().trim() || "",
-    tempatLahir: formData.get("tempatLahir")?.toString().trim() || "",
-    tanggalLahir: formData.get("tanggalLahir")?.toString().trim() || "",
-    kewarganegaraan:
-      formData.get("kewarganegaraan")?.toString().trim() || "Indonesia",
-    agama: formData.get("agama")?.toString().trim() || "",
-    pekerjaan: formData.get("pekerjaan")?.toString().trim() || "",
-    alamatTinggal: formData.get("alamatTinggal")?.toString().trim() || "",
-    suratBuktiDiri: formData.get("suratBuktiDiri")?.toString().trim() || "",
-    nomorBuktiDiri: formData.get("nomorBuktiDiri")?.toString().trim() || "",
-    tujuan: formData.get("tujuan")?.toString().trim() || "",
-    keperluan: formData.get("keperluan")?.toString().trim() || "",
-    berlakuSurat: formData.get("berlakuSurat")?.toString().trim() || "",
-    keteranganLain: formData.get("keteranganLain")?.toString().trim() || "",
-  };
+  const applicationData = parseFormData(formData);
+  const supabase = await createClient();
 
   try {
     const { error } = await supabase
@@ -777,7 +564,7 @@ export const updateApplicationAction = async (formData: FormData) => {
       .eq("id", id);
 
     if (error) {
-      console.error("Error updating application:", error);
+      console.error("Database error:", error);
       return encodedRedirect(
         "error",
         "/protected",
@@ -786,13 +573,11 @@ export const updateApplicationAction = async (formData: FormData) => {
     }
 
     revalidatePath("/protected");
-    return encodedRedirect(
-      "success",
-      "/protected",
-      "Pengajuan berhasil diupdate!"
+    redirect(
+      "/protected?success=" + encodeURIComponent("Pengajuan berhasil diupdate!")
     );
-  } catch (error) {
-    console.error("Unexpected error:", error);
+  } catch (error: any) {
+    console.error("Error in updateApplicationAction:", error);
     return encodedRedirect(
       "error",
       "/protected",
@@ -801,20 +586,75 @@ export const updateApplicationAction = async (formData: FormData) => {
   }
 };
 
-// DELETE APPLICATION ACTION
-export const deleteApplicationAction = async (formData: FormData) => {
-  const supabase = await createClient();
-  const id = formData.get("id")?.toString();
-
-  if (!id) {
-    return encodedRedirect("error", "/protected", "ID pengajuan harus diisi");
-  }
-
+export const updateApplicationStatusAction = async (formData: FormData) => {
   try {
+    const id = formData.get("id")?.toString();
+    const status = formData.get("status")?.toString();
+
+    if (!id || !status) {
+      return encodedRedirect(
+        "error",
+        "/protected",
+        "ID dan status harus diisi"
+      );
+    }
+
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("applications")
+      .update({ status })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Database error:", error);
+      return encodedRedirect(
+        "error",
+        "/protected",
+        "Gagal mengupdate status pengajuan"
+      );
+    }
+
+    revalidatePath("/protected");
+    return encodedRedirect(
+      "success",
+      "/protected",
+      "Status pengajuan berhasil diupdate!"
+    );
+  } catch (error) {
+    console.error("Unexpected error in updateApplicationStatusAction:", error);
+
+    // Jika error adalah NEXT_REDIRECT, lempar kembali
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.includes("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+
+    return encodedRedirect(
+      "error",
+      "/protected",
+      "Terjadi kesalahan yang tidak terduga"
+    );
+  }
+};
+
+export const deleteApplicationAction = async (formData: FormData) => {
+  try {
+    const id = formData.get("id")?.toString();
+
+    if (!id) {
+      return encodedRedirect("error", "/protected", "ID pengajuan harus diisi");
+    }
+
+    const supabase = await createClient();
     const { error } = await supabase.from("applications").delete().eq("id", id);
 
     if (error) {
-      console.error("Error deleting application:", error);
+      console.error("Database error:", error);
       return encodedRedirect(
         "error",
         "/protected",
@@ -829,7 +669,19 @@ export const deleteApplicationAction = async (formData: FormData) => {
       "Pengajuan berhasil dihapus!"
     );
   } catch (error) {
-    console.error("Unexpected error:", error);
+    console.error("Unexpected error in deleteApplicationAction:", error);
+
+    // Jika error adalah NEXT_REDIRECT, lempar kembali
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.includes("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+
     return encodedRedirect(
       "error",
       "/protected",
@@ -838,13 +690,61 @@ export const deleteApplicationAction = async (formData: FormData) => {
   }
 };
 
-// SEARCH APPLICATIONS ACTION
+// DATA FETCHING ACTIONS (Optimized with cache)
+export const getApplicationsAction = cache(
+  async (): Promise<ApplicationData[]> => {
+    const supabase = await createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching applications:", error);
+        return [];
+      }
+
+      return (data || []).map(mapDatabaseToInterface);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return [];
+    }
+  }
+);
+
+export const getApplicationByIdAction = cache(
+  async (id: string): Promise<ApplicationData | null> => {
+    const supabase = await createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching application:", error);
+        return null;
+      }
+
+      return data ? mapDatabaseToInterface(data) : null;
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return null;
+    }
+  }
+);
+
 export const searchApplicationsAction = async (
   formData: FormData
 ): Promise<ApplicationData[]> => {
-  const supabase = await createClient();
   const searchTerm = formData.get("search")?.toString() || "";
   const status = formData.get("status")?.toString();
+
+  const supabase = await createClient();
 
   try {
     let query = supabase
@@ -875,3 +775,113 @@ export const searchApplicationsAction = async (
     return [];
   }
 };
+
+// CHART DATA ACTIONS (Optimized with cache)
+export const getApplicationsForChart = cache(
+  async (): Promise<{ date: string; count: number }[]> => {
+    const supabase = await createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("created_at")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching applications:", error);
+        return [];
+      }
+
+      const dailyCounts: Record<string, number> = {};
+
+      data?.forEach((app) => {
+        if (!app.created_at) return;
+
+        const date = new Date(app.created_at);
+        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+        dailyCounts[formattedDate] = (dailyCounts[formattedDate] || 0) + 1;
+      });
+
+      const result: { date: string; count: number }[] = [];
+      const dates = Object.keys(dailyCounts).sort();
+
+      if (dates.length > 0) {
+        const startDate = new Date(dates[0]);
+        const endDate = new Date(dates[dates.length - 1]);
+
+        for (
+          let d = new Date(startDate);
+          d <= endDate;
+          d.setDate(d.getDate() + 1)
+        ) {
+          const dateStr = d.toISOString().split("T")[0];
+          result.push({
+            date: dateStr,
+            count: dailyCounts[dateStr] || 0,
+          });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return [];
+    }
+  }
+);
+
+export const getMonthlyApplications = cache(
+  async (): Promise<{ month: string; count: number }[]> => {
+    const supabase = await createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("created_at");
+
+      if (error) {
+        console.error("Error fetching applications:", error);
+        return [];
+      }
+
+      const monthlyCounts: Record<string, number> = {};
+
+      data?.forEach((app) => {
+        const date = new Date(app.created_at);
+        const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        monthlyCounts[month] = (monthlyCounts[month] || 0) + 1;
+      });
+
+      return Object.entries(monthlyCounts)
+        .map(([month, count]) => ({ month, count }))
+        .sort((a, b) => a.month.localeCompare(b.month));
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return [];
+    }
+  }
+);
+
+export const getApplicationsArchiveAction = cache(
+  async (): Promise<ApplicationArchive[]> => {
+    const supabase = await createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from("arsip_surat")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching applications:", error);
+        return [];
+      }
+
+      return (data || []).map(mapDatabaseToInterface);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return [];
+    }
+  }
+);
