@@ -21,13 +21,13 @@ export default async function Signup(props: {
 
   return (
     <div className="flex flex-col gap-6 items-center justify-center min-h-[80vh] px-4">
-      <Card className="w-full max-w-md shadow-md border-0">
+      <Card className="w-full max-w-md border-0">
         <form action={signUpAction}>
           <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl text-center">
+            <CardTitle className="text-2xl text-start">
               Create Account
             </CardTitle>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-sm text-muted-foreground text-start">
               Already have an account?{" "}
               <Link
                 href="/sign-in"
@@ -48,7 +48,7 @@ export default async function Signup(props: {
                 placeholder="Your full name"
                 required
                 autoComplete="name"
-                className="focus-visible:ring-blue-500"
+                className="focus-visible:ring-gray-500"
               />
             </div>
 
@@ -61,7 +61,7 @@ export default async function Signup(props: {
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
-                className="focus-visible:ring-blue-500"
+                className="focus-visible:ring-gray-500"
               />
             </div>
 
@@ -75,7 +75,7 @@ export default async function Signup(props: {
                 minLength={6}
                 required
                 autoComplete="new-password"
-                className="focus-visible:ring-blue-500"
+                className="focus-visible:ring-gray-500"
               />
               <p className="text-xs text-muted-foreground">
                 Must be at least 6 characters long
@@ -92,7 +92,7 @@ export default async function Signup(props: {
           <CardFooter className="pb-4">
             <SubmitButton
               pendingText="Creating account..."
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-md transition-colors"
             >
               Create Account
             </SubmitButton>

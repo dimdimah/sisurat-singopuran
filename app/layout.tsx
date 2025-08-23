@@ -26,7 +26,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        {children} <Toaster />
+        <Toaster />
+        {children}
       </body>
     </html>
   );

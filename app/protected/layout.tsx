@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Geist } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/app-sidebar";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`

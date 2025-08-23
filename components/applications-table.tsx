@@ -29,6 +29,7 @@ import {
   MoreVerticalIcon,
   SearchIcon,
   XCircleIcon,
+  Trash2,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -274,6 +275,7 @@ const columns: ColumnDef<ApplicationData>[] = [
                   onSelect={(e) => e.preventDefault()}
                   className="text-red-600"
                 >
+                  <Trash2 size={16} color="red" />
                   Hapus
                 </DropdownMenuItem>
               </DeleteApplicationForm>

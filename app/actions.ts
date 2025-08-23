@@ -7,11 +7,12 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 
-// TYPES AND INTERFACES
+// ARCHIVE INTERFACES
 export interface ApplicationArchive {
   id?: number;
   application_id?: number;
   namaWarga: string;
+  email: string;
   tempatLahir: string;
   tanggalLahir: string;
   kewarganegaraan: string;
@@ -29,9 +30,11 @@ export interface ApplicationArchive {
   updated_at?: string;
 }
 
+// APP INTERFACE
 export interface ApplicationData {
   id?: number;
   namaWarga: string;
+  email: string;
   tempatLahir: string;
   tanggalLahir: string;
   kewarganegaraan: string;
@@ -47,6 +50,48 @@ export interface ApplicationData {
   status?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+// fUNC SEND EMAIL NOTIF
+async function sendStatusNotificationEmail(
+  application: ApplicationData,
+  newStatus: string
+) {
+  try {
+    const emailType =
+      newStatus === "Approved"
+        ? "approval"
+        : newStatus === "Rejected"
+          ? "rejection"
+          : null;
+
+    if (!emailType || !application.email) {
+      return;
+    }
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/send-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: emailType,
+          email: application.email,
+          namaWarga: application.namaWarga,
+          tujuan: application.tujuan,
+          applicationId: application.id,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Failed to send email notification");
+    }
+  } catch (error) {
+    console.error("Error sending email notification:", error);
+  }
 }
 
 // HELPER INSERT DATA PENGAJUAN
@@ -54,7 +99,6 @@ async function insertApplication(applicationData: any) {
   const supabase = await createClient();
 
   try {
-    const nomorSurat = await generateNomorSurat();
     const tanggalLahirISO = new Date(
       applicationData.tanggalLahir
     ).toISOString();
@@ -64,6 +108,7 @@ async function insertApplication(applicationData: any) {
 
     const { error } = await supabase.from("applications").insert({
       nama_warga: applicationData.namaWarga,
+      email: applicationData.email,
       tempat_lahir: applicationData.tempatLahir,
       tanggal_lahir: tanggalLahirISO,
       kewarganegaraan: applicationData.kewarganegaraan,
@@ -77,7 +122,7 @@ async function insertApplication(applicationData: any) {
       berlaku_surat: berlakuSuratISO,
       keterangan_lain: applicationData.keteranganLain,
       status: "pending",
-      nomor_surat: nomorSurat,
+      nomor_surat: "",
     });
 
     if (error) {
@@ -96,6 +141,7 @@ async function insertApplication(applicationData: any) {
 export type DatabaseApplication = {
   id: number;
   nama_warga: string;
+  email: string;
   tempat_lahir: string;
   tanggal_lahir: string;
   kewarganegaraan: string;
@@ -120,6 +166,7 @@ const mapDatabaseToInterface = (
   return {
     id: dbApp.id,
     namaWarga: dbApp.nama_warga,
+    email: dbApp.email,
     tempatLahir: dbApp.tempat_lahir,
     tanggalLahir: dbApp.tanggal_lahir,
     kewarganegaraan: dbApp.kewarganegaraan,
@@ -141,6 +188,7 @@ const mapDatabaseToInterface = (
 const validateApplicationData = (data: any) => {
   const requiredFields = [
     "namaWarga",
+    "email",
     "tempatLahir",
     "tanggalLahir",
     "agama",
@@ -161,8 +209,6 @@ const validateApplicationData = (data: any) => {
       error: `Field wajib diisi: ${missing.join(", ")}`,
     };
   }
-
-  // Validasi tanggal
   try {
     new Date(data.tanggalLahir).toISOString();
     new Date(data.berlakuSurat).toISOString();
@@ -176,6 +222,7 @@ const validateApplicationData = (data: any) => {
 const parseFormData = (formData: FormData) => {
   return {
     namaWarga: formData.get("namaWarga")?.toString().trim() || "",
+    email: formData.get("email")?.toString().trim() || "",
     tempatLahir: formData.get("tempatLahir")?.toString().trim() || "",
     tanggalLahir: formData.get("tanggalLahir")?.toString().trim() || "",
     kewarganegaraan:
@@ -190,41 +237,6 @@ const parseFormData = (formData: FormData) => {
     berlakuSurat: formData.get("berlakuSurat")?.toString().trim() || "",
     keteranganLain: formData.get("keteranganLain")?.toString().trim() || "",
   };
-};
-
-const generateNomorSurat = async (): Promise<string> => {
-  const supabase = await createClient();
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-
-  const bulanRomawi = [
-    "",
-    "I",
-    "II",
-    "III",
-    "IV",
-    "V",
-    "VI",
-    "VII",
-    "VIII",
-    "IX",
-    "X",
-    "XI",
-    "XII",
-  ];
-
-  const { count, error } = await supabase
-    .from("applications")
-    .select("id", { count: "exact", head: true })
-    .gte("created_at", `${year}-${String(month).padStart(2, "0")}-01`)
-    .lte("created_at", `${year}-${String(month).padStart(2, "0")}-31`);
-
-  if (error) throw new Error("Gagal menghitung nomor urut");
-
-  const nomorUrut = (count ?? 0) + 1;
-  const kodeSurat = "474";
-  return `${kodeSurat}/${String(nomorUrut).padStart(3, "0")}/${bulanRomawi[month]}/${year}`;
 };
 
 // AUTHENTICATION ACTIONS
@@ -475,6 +487,7 @@ export const createApplicationUsers = async (formData: FormData) => {
     const supabase = await createClient();
     const { error } = await supabase.from("applications").insert({
       nama_warga: applicationData.namaWarga,
+      email: applicationData.email,
       tempat_lahir: applicationData.tempatLahir,
       tanggal_lahir: new Date(applicationData.tanggalLahir).toISOString(),
       kewarganegaraan: applicationData.kewarganegaraan,
@@ -498,6 +511,166 @@ export const createApplicationUsers = async (formData: FormData) => {
   } catch (e) {
     console.error(e);
     return { success: false, error: "Terjadi kesalahan server." };
+  }
+};
+
+// UPDATE APPLICATION ACTION
+export const updateApplicationUsers = async (formData: FormData) => {
+  const supabase = await createClient();
+  const id = formData.get("id")?.toString();
+
+  if (!id) {
+    return { error: "ID pengajuan harus diisi" };
+  }
+
+  const applicationData = {
+    namaWarga: formData.get("namaWarga")?.toString().trim() || "",
+    email: formData.get("email")?.toString().trim() || "",
+    tempatLahir: formData.get("tempatLahir")?.toString().trim() || "",
+    tanggalLahir: formData.get("tanggalLahir")?.toString().trim() || "",
+    kewarganegaraan:
+      formData.get("kewarganegaraan")?.toString().trim() || "Indonesia",
+    agama: formData.get("agama")?.toString().trim() || "",
+    pekerjaan: formData.get("pekerjaan")?.toString().trim() || "",
+    alamatTinggal: formData.get("alamatTinggal")?.toString().trim() || "",
+    suratBuktiDiri: formData.get("suratBuktiDiri")?.toString().trim() || "",
+    nomorBuktiDiri: formData.get("nomorBuktiDiri")?.toString().trim() || "",
+    tujuan: formData.get("tujuan")?.toString().trim() || "",
+    keperluan: formData.get("keperluan")?.toString().trim() || "",
+    berlakuSurat: formData.get("berlakuSurat")?.toString().trim() || "",
+    keteranganLain: formData.get("keteranganLain")?.toString().trim() || "",
+  };
+
+  // Validate required fields
+  const requiredFields = [
+    "namaWarga",
+    "email",
+    "tempatLahir",
+    "tanggalLahir",
+    "agama",
+    "pekerjaan",
+    "alamatTinggal",
+    "suratBuktiDiri",
+    "nomorBuktiDiri",
+    "tujuan",
+    "keperluan",
+    "berlakuSurat",
+  ];
+
+  const missing = requiredFields.filter(
+    (field) => !applicationData[field as keyof typeof applicationData]
+  );
+
+  if (missing.length > 0) {
+    return { error: `Field wajib diisi: ${missing.join(", ")}` };
+  }
+  // Validasi email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(applicationData.email)) {
+    return encodedRedirect("error", "/dashboard", "Format email tidak valid.");
+  }
+
+  // Validate date format
+  try {
+    new Date(applicationData.tanggalLahir).toISOString();
+    new Date(applicationData.berlakuSurat).toISOString();
+  } catch {
+    return { error: "Format tanggal tidak valid." };
+  }
+
+  try {
+    const { error } = await supabase
+      .from("applications")
+      .update({
+        nama_warga: applicationData.namaWarga,
+        email: applicationData.email,
+        tempat_lahir: applicationData.tempatLahir,
+        tanggal_lahir: new Date(applicationData.tanggalLahir).toISOString(),
+        kewarganegaraan: applicationData.kewarganegaraan,
+        agama: applicationData.agama,
+        pekerjaan: applicationData.pekerjaan,
+        alamat_tinggal: applicationData.alamatTinggal,
+        surat_bukti_diri: applicationData.suratBuktiDiri,
+        nomor_bukti_diri: applicationData.nomorBuktiDiri,
+        tujuan: applicationData.tujuan,
+        keperluan: applicationData.keperluan,
+        berlaku_surat: new Date(applicationData.berlakuSurat).toISOString(),
+        keterangan_lain: applicationData.keteranganLain,
+      })
+      .eq("id", id);
+
+    if (error) {
+      return { error: `Gagal mengupdate: ${error.message}` };
+    }
+
+    revalidatePath("/protected");
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { error: "Terjadi kesalahan yang tidak terduga" };
+  }
+};
+
+// UPDATE APPLICATION STATUS ACTION
+export const updateApplicationStatusAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  const id = formData.get("id")?.toString();
+  const status = formData.get("status")?.toString();
+
+  if (!id || !status) {
+    return encodedRedirect("error", "/protected", "ID dan status harus diisi");
+  }
+
+  try {
+    const { data: currentApp, error: fetchError } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching current application:", fetchError);
+      return encodedRedirect(
+        "error",
+        "/protected",
+        "Gagal mengambil data pengajuan"
+      );
+    }
+
+    // Update the status
+    const { error } = await supabase
+      .from("applications")
+      .update({ status })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating application status:", error);
+      return encodedRedirect(
+        "error",
+        "/protected",
+        "Gagal mengupdate status pengajuan"
+      );
+    }
+
+    // Send email notification if status is Approved or Rejected
+    if ((status === "Approved" || status === "Rejected") && currentApp) {
+      const applicationData = mapDatabaseToInterface(currentApp);
+      await sendStatusNotificationEmail(applicationData, status);
+    }
+
+    revalidatePath("/protected");
+    return encodedRedirect(
+      "success",
+      "/protected",
+      `Status pengajuan berhasil diupdate! ${status === "Approved" || status === "Rejected" ? "Email notifikasi telah dikirim." : ""}`
+    );
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return encodedRedirect(
+      "error",
+      "/protected",
+      "Terjadi kesalahan yang tidak terduga"
+    );
   }
 };
 
@@ -548,6 +721,7 @@ export const updateApplicationAction = async (formData: FormData) => {
       .from("applications")
       .update({
         nama_warga: applicationData.namaWarga,
+        email: applicationData.email,
         tempat_lahir: applicationData.tempatLahir,
         tanggal_lahir: new Date(applicationData.tanggalLahir).toISOString(),
         kewarganegaraan: applicationData.kewarganegaraan,
@@ -586,62 +760,7 @@ export const updateApplicationAction = async (formData: FormData) => {
   }
 };
 
-export const updateApplicationStatusAction = async (formData: FormData) => {
-  try {
-    const id = formData.get("id")?.toString();
-    const status = formData.get("status")?.toString();
-
-    if (!id || !status) {
-      return encodedRedirect(
-        "error",
-        "/protected",
-        "ID dan status harus diisi"
-      );
-    }
-
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("applications")
-      .update({ status })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Database error:", error);
-      return encodedRedirect(
-        "error",
-        "/protected",
-        "Gagal mengupdate status pengajuan"
-      );
-    }
-
-    revalidatePath("/protected");
-    return encodedRedirect(
-      "success",
-      "/protected",
-      "Status pengajuan berhasil diupdate!"
-    );
-  } catch (error) {
-    console.error("Unexpected error in updateApplicationStatusAction:", error);
-
-    // Jika error adalah NEXT_REDIRECT, lempar kembali
-    if (
-      error &&
-      typeof error === "object" &&
-      "digest" in error &&
-      typeof error.digest === "string" &&
-      error.digest.includes("NEXT_REDIRECT")
-    ) {
-      throw error;
-    }
-
-    return encodedRedirect(
-      "error",
-      "/protected",
-      "Terjadi kesalahan yang tidak terduga"
-    );
-  }
-};
-
+// DELETE APPLICATION ACTION (untuk user)
 export const deleteApplicationAction = async (formData: FormData) => {
   try {
     const id = formData.get("id")?.toString();

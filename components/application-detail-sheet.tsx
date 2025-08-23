@@ -7,6 +7,7 @@ import {
   UserIcon,
   FileTextIcon,
   ClockIcon,
+  EditIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { AddApplicationDialog } from "./add-application-dialog";
 import type { ApplicationData } from "@/app/actions";
 
 interface ApplicationDetailSheetProps {
@@ -223,9 +225,15 @@ export function ApplicationDetailSheet({
           </div>
         </div>
 
-        <SheetFooter className="mt-auto">
+        <SheetFooter className="mt-auto flex gap-2">
+          <AddApplicationDialog editData={application}>
+            <Button variant="outline" className="flex-1 bg-transparent">
+              <EditIcon className="size-4 mr-2" />
+              Edit
+            </Button>
+          </AddApplicationDialog>
           <SheetClose asChild>
-            <Button variant="outline" className="w-full bg-transparent">
+            <Button variant="outline" className="flex-1 bg-transparent">
               Tutup
             </Button>
           </SheetClose>

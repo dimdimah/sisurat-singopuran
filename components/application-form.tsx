@@ -36,6 +36,7 @@ import {
 
 const formSchema = z.object({
   namaWarga: z.string().min(1, "Nama lengkap harus diisi"),
+  email: z.string().email("Email tidak valid").min(1, "Email harus diisi"),
   tempatLahir: z.string().min(1, "Tempat lahir harus diisi"),
   tanggalLahir: z.date({
     required_error: "Tanggal lahir harus diisi",
@@ -65,6 +66,7 @@ export default function ApplicationFormServer({
     resolver: zodResolver(formSchema),
     defaultValues: {
       namaWarga: "",
+      email: "",
       tempatLahir: "",
       kewarganegaraan: "Indonesia",
       agama: "",
@@ -75,9 +77,6 @@ export default function ApplicationFormServer({
       tujuan: "",
       keperluan: "",
       keteranganLain: "",
-      // Untuk field date, kita tidak memberikan nilai default
-      // tanggalLahir: undefined, (tidak perlu didefinisikan)
-      // berlakuSurat: undefined, (tidak perlu didefinisikan)
     },
   });
 
@@ -105,9 +104,9 @@ export default function ApplicationFormServer({
           title: "Berhasil",
           description: "Pengajuan berhasil disimpan!",
         });
-        // Reset form dengan nilai default yang tepat
         form.reset({
           namaWarga: "",
+          email: "",
           tempatLahir: "",
           kewarganegaraan: "Indonesia",
           agama: "",
@@ -118,7 +117,6 @@ export default function ApplicationFormServer({
           tujuan: "",
           keperluan: "",
           keteranganLain: "",
-          // Untuk field date, kita set ke undefined
           tanggalLahir: undefined,
           berlakuSurat: undefined,
         });
@@ -144,6 +142,19 @@ export default function ApplicationFormServer({
                 <FormLabel>Nama Lengkap *</FormLabel>
                 <FormControl>
                   <Input placeholder="Nama lengkap" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email *</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

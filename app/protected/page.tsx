@@ -1,4 +1,5 @@
 import AppSidebar from "@/components/app-sidebar";
+import { Suspense } from "react";
 import { ApplicationsStats } from "@/components/applications-stats";
 import { ApplicationsTable } from "@/components/applications-table";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
@@ -13,7 +14,7 @@ export default async function Page() {
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader title="Dashboard" />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">

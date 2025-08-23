@@ -21,11 +21,11 @@ export default async function SignIn(props: {
 
   return (
     <div className="flex items-center flex-col gap-4 justify-center min-h-[80vh] px-4">
-      <Card className="w-full max-w-md shadow-md border-0">
+      <Card className="w-full max-w-md border-0">
         <form action={signInAction}>
           <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-            <p className="text-sm text-muted-foreground text-center">
+            <CardTitle className="text-2xl text-start">Sign In</CardTitle>
+            <p className="text-sm text-muted-foreground text-start">
               Don't have an account?{" "}
               <Link
                 href="/sign-up"
