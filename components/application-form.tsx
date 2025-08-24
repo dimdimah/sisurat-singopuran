@@ -33,6 +33,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useState, useRef } from "react";
 
 const formSchema = z.object({
   namaWarga: z.string().min(1, "Nama lengkap harus diisi"),
@@ -62,6 +64,10 @@ interface ApplicationFormServerProps {
 export default function ApplicationFormServer({
   isSubmitDisabled,
 }: ApplicationFormServerProps) {
+  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,7 +86,22 @@ export default function ApplicationFormServer({
     },
   });
 
+  const handleCaptchaChange = (token: string | null) => {
+    setIsCaptchaVerified(!!token);
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!isCaptchaVerified) {
+      toast({
+        title: "Gagal",
+        description: "Harap verifikasi bahwa Anda bukan robot",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
@@ -90,6 +111,12 @@ export default function ApplicationFormServer({
           formData.append(key, value);
         }
       });
+
+      // Dapatkan token CAPTCHA
+      const token = await recaptchaRef.current?.getValue();
+      if (token) {
+        formData.append("captchaToken", token);
+      }
 
       const result = await createApplicationUsers(formData);
 
@@ -120,6 +147,10 @@ export default function ApplicationFormServer({
           tanggalLahir: undefined,
           berlakuSurat: undefined,
         });
+
+        // Reset CAPTCHA
+        recaptchaRef.current?.reset();
+        setIsCaptchaVerified(false);
       }
     } catch (error) {
       toast({
@@ -127,6 +158,8 @@ export default function ApplicationFormServer({
         description: "Terjadi kesalahan saat menyimpan data",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -452,12 +485,26 @@ export default function ApplicationFormServer({
           )}
         />
 
+        {/* CAPTCHA Section */}
+        <div className="py-4">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "SITE_KEY"}
+            onChange={handleCaptchaChange}
+          />
+          {!isCaptchaVerified && form.formState.isSubmitted && (
+            <p className="text-sm text-destructive mt-2">
+              Harap verifikasi bahwa Anda bukan robot
+            </p>
+          )}
+        </div>
+
         <Button
           type="submit"
-          disabled={form.formState.isSubmitting || isSubmitDisabled}
+          disabled={isSubmitting || isSubmitDisabled || !isCaptchaVerified}
           className="w-full"
         >
-          {form.formState.isSubmitting ? (
+          {isSubmitting ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
               Menyimpan...

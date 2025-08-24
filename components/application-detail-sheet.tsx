@@ -8,6 +8,7 @@ import {
   FileTextIcon,
   ClockIcon,
   EditIcon,
+  DownloadIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { AddApplicationDialog } from "./add-application-dialog";
+import { PDFPreviewDialog } from "@/components/dashboard/pdf-preview-dialog";
 import type { ApplicationData } from "@/app/actions";
 
 interface ApplicationDetailSheetProps {
@@ -60,6 +62,29 @@ export function ApplicationDetailSheet({
   const status = application.status || "Pending";
   const statusInfo =
     statusConfig[status as keyof typeof statusConfig] || statusConfig.Pending;
+  const downloadPDF = async () => {
+    try {
+      const response = await fetch(
+        `/api/generate-pdf?id=${application.id}&type=general`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download PDF");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `surat-${application.namaWarga}-${application.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
+  };
 
   return (
     <Sheet>
@@ -232,6 +257,20 @@ export function ApplicationDetailSheet({
               Edit
             </Button>
           </AddApplicationDialog>
+          <PDFPreviewDialog application={application}>
+            <Button variant="outline" className="flex-1 bg-transparent">
+              <FileTextIcon className="size-4 mr-2" />
+              PDF
+            </Button>
+          </PDFPreviewDialog>
+          <Button
+            variant="outline"
+            className="flex-1 bg-transparent"
+            onClick={downloadPDF}
+          >
+            <DownloadIcon className="size-4 mr-2" />
+            Download
+          </Button>
           <SheetClose asChild>
             <Button variant="outline" className="flex-1 bg-transparent">
               Tutup

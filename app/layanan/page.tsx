@@ -118,15 +118,12 @@ export default function Home() {
                   desa
                 </CardDescription>
               </div>
-              <Badge variant="secondary" className="text-sm">
-                Step 1: Isi Formulir
-              </Badge>
             </div>
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <ApplicationFormServer isSubmitDisabled={!agreedToTerms} />
           </CardContent>
-          <CardFooter className="bg-muted/40 px-6 py-4 border-t flex flex-col items-start gap-4">
+          <CardFooter className="px-6 py-4 flex flex-col items-start gap-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="terms"
@@ -143,10 +140,10 @@ export default function Home() {
                 yang berlaku
               </Label>
             </div>
-            <p className="text-xs text-muted-foreground">
+            {/* <p className="text-xs text-muted-foreground">
               Tombol submit akan aktif setelah Anda menyetujui syarat dan
               ketentuan
-            </p>
+            </p> */}
           </CardFooter>
         </Card>
 
@@ -164,9 +161,7 @@ export default function Home() {
                 Proses verifikasi membutuhkan waktu maksimal 1x24 jam pada hari
                 kerja
               </li>
-              <li>
-                Surat dapat diambil di kantor desa atau didownload secara online
-              </li>
+              <li>Surat dapat diambil di kantor desa secara langsung</li>
               <li>Untuk pertanyaan lebih lanjut, hubungi admin desa</li>
             </ul>
           </CardContent>
