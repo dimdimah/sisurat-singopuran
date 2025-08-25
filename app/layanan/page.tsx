@@ -9,8 +9,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -67,9 +65,9 @@ export default function Home() {
         </div>
 
         {/* Progress Bar */}
-        <Card className="mb-8">
+        <Card className="mb-8 border-none">
           <CardContent className="p-6">
-            <div className="flex justify-between mb-4">
+            <div className="flex justify-between mb-6">
               {progressSteps.map((step, index) => (
                 <div
                   key={step.id}
@@ -97,11 +95,8 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <Progress value={33} className="h-2" />
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span>Step 1 of 3</span>
-              <span>33% selesai</span>
-            </div>
+            <Progress value={100} className="h-2" />
+            <div className="flex justify-between mt-2 text-xs text-muted-foreground"></div>
           </CardContent>
         </Card>
 

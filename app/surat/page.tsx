@@ -8,21 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Plus, List } from "lucide-react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { FileText } from "lucide-react";
 import ApplicationFormServer from "@/components/application-form";
-import ApplicationListServer from "@/components/application-list";
-import CertificatePreview from "@/components/certificate-preview";
 import Layout from "@/components/Layout";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("form");
-  const [previewData, setPreviewData] = useState(null);
-
-  const handleFormSubmit = (data: any) => {
-    setPreviewData(data);
-    setActiveTab("preview");
-  };
 
   return (
     <Layout>
@@ -59,48 +51,6 @@ export default function Home() {
                 </CardContent>
               </Card>
             </TabsContent>
-
-            {/* <TabsContent value="list">
-              <Card className="shadow-lg border-0">
-                <CardHeader className="bg-blue-600 text-white rounded-t-lg">
-                  <CardTitle className="text-2xl">Daftar Pengajuan</CardTitle>
-                  <CardDescription className="text-blue-100">
-                    Daftar semua pengajuan surat keterangan desa
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8">
-                  <ApplicationListServer />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="preview">
-              <Card className="shadow-lg border-0">
-                <CardHeader className="bg-blue-600 text-white rounded-t-lg">
-                  <CardTitle className="text-2xl">
-                    Pratinjau Surat Keterangan
-                  </CardTitle>
-                  <CardDescription className="text-blue-100">
-                    Pratinjau surat keterangan desa yang akan dicetak
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8">
-                  {previewData ? (
-                    <CertificatePreview data={previewData} />
-                  ) : (
-                    <div className="text-center py-12">
-                      <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">
-                        Belum ada data untuk dipratinjau
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Silakan isi form pengajuan terlebih dahulu
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent> */}
           </Tabs>
         </div>
       </div>
