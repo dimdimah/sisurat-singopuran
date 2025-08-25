@@ -55,12 +55,12 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-8">
-                  <ApplicationFormServer />
+                  <ApplicationFormServer isSubmitDisabled={false} />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="list">
+            {/* <TabsContent value="list">
               <Card className="shadow-lg border-0">
                 <CardHeader className="bg-blue-600 text-white rounded-t-lg">
                   <CardTitle className="text-2xl">Daftar Pengajuan</CardTitle>
@@ -100,7 +100,7 @@ export default function Home() {
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </div>
       </div>
