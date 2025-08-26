@@ -50,8 +50,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import ReCAPTCHA from "react-google-recaptcha";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 const formSchema = z.object({
   namaWarga: z.string().min(1, "Nama lengkap harus diisi"),
@@ -79,16 +78,9 @@ interface ApplicationFormServerProps {
 export default function ApplicationFormServer({
   isSubmitDisabled,
 }: ApplicationFormServerProps) {
-  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const autoValidUntilDate = addDays(new Date(), 7);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -109,24 +101,7 @@ export default function ApplicationFormServer({
     },
   });
 
-  const handleCaptchaChange = (token: string | null) => {
-    setIsCaptchaVerified(!!token);
-  };
-
-  const onExpired = () => {
-    setIsCaptchaVerified(false);
-  };
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!isCaptchaVerified) {
-      toast({
-        title: "Gagal",
-        description: "Harap verifikasi bahwa Anda bukan robot",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -143,11 +118,6 @@ export default function ApplicationFormServer({
           formData.append(key, value);
         }
       });
-
-      const token = await recaptchaRef.current?.getValue();
-      if (token) {
-        formData.append("captchaToken", token);
-      }
 
       const result = await createApplicationUsers(formData);
 
@@ -178,9 +148,6 @@ export default function ApplicationFormServer({
           tanggalLahir: undefined,
           berlakuSurat: addDays(new Date(), 7),
         });
-
-        recaptchaRef.current?.reset();
-        setIsCaptchaVerified(false);
       }
     } catch (error) {
       toast({
@@ -192,13 +159,6 @@ export default function ApplicationFormServer({
       setIsSubmitting(false);
     }
   };
-
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-  if (!recaptchaSiteKey) {
-    console.error(
-      "reCAPTCHA site key tidak ditemukan. Pastikan NEXT_PUBLIC_RECAPTCHA_SITE_KEY telah diatur."
-    );
-  }
 
   return (
     <div className="w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
@@ -215,6 +175,16 @@ export default function ApplicationFormServer({
               Lengkapi data berikut untuk mengajukan surat keterangan
             </p>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="text-xs">
+            <Clock className="h-3 w-3 mr-1" />
+            Di proses pada hari kerja
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            <Shield className="h-3 w-3 mr-1" />
+            Data aman
+          </Badge>
         </div>
       </div>
 
@@ -635,71 +605,11 @@ export default function ApplicationFormServer({
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 shadow-sm">
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="text-center">
-                  <h3 className="text-sm font-medium text-foreground mb-1">
-                    Verifikasi Keamanan
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Pastikan Anda bukan robot untuk melanjutkan
-                  </p>
-                </div>
-
-                {isClient && recaptchaSiteKey ? (
-                  <div className="flex justify-center w-full">
-                    <div className="scale-90 sm:scale-100 origin-center">
-                      <ReCAPTCHA
-                        ref={recaptchaRef}
-                        sitekey={recaptchaSiteKey}
-                        onChange={handleCaptchaChange}
-                        onExpired={onExpired}
-                        size="normal"
-                      />
-                    </div>
-                  </div>
-                ) : isClient && !recaptchaSiteKey ? (
-                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg w-full max-w-md">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="h-4 w-4 text-destructive" />
-                      <p className="text-destructive text-sm font-medium">
-                        Konfigurasi reCAPTCHA tidak ditemukan
-                      </p>
-                    </div>
-                    <p className="text-destructive/80 text-xs">
-                      Pastikan environment variable{" "}
-                      <code className="bg-destructive/10 px-1 rounded text-xs">
-                        NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-                      </code>{" "}
-                      telah dikonfigurasi dengan benar.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-muted/50 border border-border rounded-lg w-full max-w-md">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      <p className="text-muted-foreground text-sm">
-                        Memuat widget reCAPTCHA...
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {!isCaptchaVerified && form.formState.isSubmitted && (
-                  <p className="text-sm text-destructive text-center">
-                    Harap verifikasi bahwa Anda bukan robot
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
           <div className="pt-4">
             <Button
               type="submit"
-              disabled={isSubmitting || isSubmitDisabled || !isCaptchaVerified}
-              className="w-full h-12 sm:h-14 text-base sm:text-lg font-medium bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              disabled={isSubmitting || isSubmitDisabled}
+              className="w-full text-base sm:text-base font-medium bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
