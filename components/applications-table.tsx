@@ -201,6 +201,18 @@ const columns: ColumnDef<ApplicationData>[] = [
     },
   },
   {
+    accessorKey: "nomorSurat",
+    header: "Nomor Surat",
+    cell: ({ row }) => (
+      <div className="max-w-[200px]">
+        <div className="font-medium truncate">{row.original.nomorSurat}</div>
+        <div className="text-sm text-muted-foreground truncate">
+          {row.original.nomorSurat}
+        </div>
+      </div>
+    ),
+  },
+  {
     accessorKey: "created_at",
     header: "Tanggal Dibuat",
     cell: ({ row }) => {

@@ -1,166 +1,44 @@
 "use client";
 
-import { useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { FileText, CheckCircle, Clock, Download } from "lucide-react";
+import { FileText } from "lucide-react";
 import ApplicationFormServer from "@/components/application-form";
 import Layout from "@/components/Layout";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("form");
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-
-  // Data untuk progress steps
-  const progressSteps = [
-    {
-      id: 1,
-      title: "Isi Formulir",
-      description: "Lengkapi data pengajuan",
-      icon: <FileText className="w-4 h-4" />,
-      status: "completed",
-    },
-    {
-      id: 2,
-      title: "Verifikasi",
-      description: "Proses pengecekan data",
-      icon: <Clock className="w-4 h-4" />,
-      status: "current",
-    },
-    {
-      id: 3,
-      title: "Selesai",
-      description: "Surat siap diambil",
-      icon: <CheckCircle className="w-4 h-4" />,
-      status: "upcoming",
-    },
-  ];
-
   return (
     <Layout
       title="Pengajuan Surat | Sisurat Singopuran"
-      description="Ajukan surat keterangan desa secara online dengan mudah"
+      description="Pengajuan surat desa Singopuran"
     >
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-primary" />
+        <div className="text-center mb-4 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-stone-200 text-black rounded-full mb-2 sm:mb-4">
+            <FileText className="w-5 h-5 sm:w-8 sm:h-8" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Sistem Pengajuan Surat Keterangan
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Sistem Pengajuan Keterangan Desa
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Ajukan surat keterangan desa secara online dengan mudah dan cepat
+          <p className="text-sm sm:text-base text-gray-500 max-w-2xl mx-auto px-2">
+            Sistem digital untuk mengajukan surat keterangan desa dengan mudah
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <Card className="mb-8 border-none">
-          <CardContent className="p-6">
-            <div className="flex justify-between mb-6">
-              {progressSteps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className="flex flex-col items-center text-center flex-1"
-                >
-                  <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full mb-2 ${
-                      step.status === "completed"
-                        ? "bg-green-100 text-green-600 dark:bg-green-900/20"
-                        : step.status === "current"
-                          ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20"
-                          : "bg-gray-100 text-gray-400 dark:bg-gray-800"
-                    }`}
-                  >
-                    {step.status === "completed" ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      step.icon
-                    )}
-                  </div>
-                  <h3 className="text-sm font-medium">{step.title}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <Progress value={100} className="h-2" />
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground"></div>
-          </CardContent>
-        </Card>
-
         {/* Main Content */}
-        <Card className="shadow-sm border-0">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-2xl">
-                  Ajukan Surat Keterangan
-                </CardTitle>
-                <CardDescription>
-                  Lengkapi formulir berikut untuk mengajukan surat keterangan
-                  desa
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6 pt-0">
-            <ApplicationFormServer isSubmitDisabled={!agreedToTerms} />
-          </CardContent>
-          <CardFooter className="px-6 py-4 flex flex-col items-start gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="terms"
-                checked={agreedToTerms}
-                onCheckedChange={(checked) =>
-                  setAgreedToTerms(checked === true)
-                }
-              />
-              <Label htmlFor="terms" className="text-sm text-muted-foreground">
-                Saya menyetujui{" "}
-                <a href="#" className="text-primary hover:underline">
-                  syarat dan ketentuan
-                </a>{" "}
-                yang berlaku
-              </Label>
-            </div>
-            {/* <p className="text-xs text-muted-foreground">
-              Tombol submit akan aktif setelah Anda menyetujui syarat dan
-              ketentuan
-            </p> */}
-          </CardFooter>
-        </Card>
-
-        {/* Info Tambahan */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Informasi Penting</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <ul className="space-y-2 list-disc list-inside">
-              <li>
-                Pastikan data yang diisi sesuai dengan dokumen yang dimiliki
-              </li>
-              <li>
-                Proses verifikasi membutuhkan waktu maksimal 1x24 jam pada hari
-                kerja
-              </li>
-              <li>Surat dapat diambil di kantor desa secara langsung</li>
-              <li>Untuk pertanyaan lebih lanjut, hubungi admin desa</li>
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="max-w-6xl mx-auto">
+          <Card className="border-0 shadow-sm sm:shadow-md">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <ApplicationFormServer isSubmitDisabled={false} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Layout>
   );

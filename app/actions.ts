@@ -48,6 +48,7 @@ export interface ApplicationData {
   berlakuSurat: string;
   keteranganLain?: string;
   status?: string;
+  nomorSurat?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -70,7 +71,7 @@ async function sendStatusNotificationEmail(
     }
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/send-email`,
+      `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL}/api/send-email`,
       {
         method: "POST",
         headers: {
@@ -139,6 +140,7 @@ async function insertApplication(applicationData: any) {
 }
 
 export type DatabaseApplication = {
+  nomor_surat: string | undefined;
   id: number;
   nama_warga: string;
   email: string;
@@ -155,6 +157,7 @@ export type DatabaseApplication = {
   berlaku_surat: string;
   keterangan_lain?: string;
   status: string;
+  nomorSurat?: string;
   created_at: string;
   updated_at: string;
 };
@@ -180,6 +183,7 @@ const mapDatabaseToInterface = (
     berlakuSurat: dbApp.berlaku_surat,
     keteranganLain: dbApp.keterangan_lain,
     status: dbApp.status,
+    nomorSurat: dbApp.nomor_surat,
     created_at: dbApp.created_at,
     updated_at: dbApp.updated_at,
   };
@@ -621,8 +625,12 @@ export const updateApplicationStatusAction = async (formData: FormData) => {
     return encodedRedirect("error", "/protected", "ID dan status harus diisi");
   }
 
+  let currentApp;
+  let emailSent = false;
+
   try {
-    const { data: currentApp, error: fetchError } = await supabase
+    // Fetch current application
+    const { data: fetchedApp, error: fetchError } = await supabase
       .from("applications")
       .select("*")
       .eq("id", id)
@@ -637,14 +645,16 @@ export const updateApplicationStatusAction = async (formData: FormData) => {
       );
     }
 
+    currentApp = fetchedApp;
+
     // Update the status
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("applications")
       .update({ status })
       .eq("id", id);
 
-    if (error) {
-      console.error("Error updating application status:", error);
+    if (updateError) {
+      console.error("Error updating application status:", updateError);
       return encodedRedirect(
         "error",
         "/protected",
@@ -654,16 +664,17 @@ export const updateApplicationStatusAction = async (formData: FormData) => {
 
     // Send email notification if status is Approved or Rejected
     if ((status === "Approved" || status === "Rejected") && currentApp) {
-      const applicationData = mapDatabaseToInterface(currentApp);
-      await sendStatusNotificationEmail(applicationData, status);
+      try {
+        const applicationData = mapDatabaseToInterface(currentApp);
+        await sendStatusNotificationEmail(applicationData, status);
+        emailSent = true;
+      } catch (emailError) {
+        console.error("Error sending email notification:", emailError);
+        // Don't fail the whole operation if email fails
+      }
     }
 
     revalidatePath("/protected");
-    return encodedRedirect(
-      "success",
-      "/protected",
-      `Status pengajuan berhasil diupdate! ${status === "Approved" || status === "Rejected" ? "Email notifikasi telah dikirim." : ""}`
-    );
   } catch (error) {
     console.error("Unexpected error:", error);
     return encodedRedirect(
@@ -672,6 +683,13 @@ export const updateApplicationStatusAction = async (formData: FormData) => {
       "Terjadi kesalahan yang tidak terduga"
     );
   }
+
+  // Success redirect - outside try-catch to avoid catching NEXT_REDIRECT
+  return encodedRedirect(
+    "success",
+    "/protected",
+    `Status pengajuan berhasil diupdate! ${emailSent ? "Email notifikasi telah dikirim." : ""}`
+  );
 };
 
 export const createApplicationAction = async (formData: FormData) => {

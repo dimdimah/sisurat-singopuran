@@ -125,7 +125,7 @@ export default function PanduanSuratPage() {
             <p className="text-muted-foreground mt-1 text-sm sm:text-base mb-2">
               {T.subtitle}
             </p>
-            <Link href="/surat">
+            <Link href="/layanan">
               <Button size="sm">
                 <FileText className="mr-2 h-4 w-4" />
                 {T.ctaApply}
@@ -272,7 +272,7 @@ export default function PanduanSuratPage() {
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-2">
             <span className="text-sm text-muted-foreground">Siap ajukan?</span>
             <div className="flex gap-2">
-              <Link href="/surat">
+              <Link href="/layanan">
                 <Button size="sm">
                   <FileText className="mr-2 h-4 w-4" />
                   Ajukan Sekarang
