@@ -131,6 +131,7 @@ export default function ApplicationFormServer({
         toast({
           title: "Berhasil",
           description: "Pengajuan berhasil disimpan!",
+          variant: "success",
         });
         form.reset({
           namaWarga: "",
@@ -161,228 +162,231 @@ export default function ApplicationFormServer({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
-      <div className="mb-6 sm:mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <FileText className="h-6 w-6 text-primary" />
+    <div className="w-full max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 lg:px-6">
+      {/* <div className="mb-4 xs:mb-6 sm:mb-8">
+        <div className="flex items-start xs:items-center gap-2 xs:gap-3 mb-3 xs:mb-4">
+          <div className="p-1.5 xs:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+            <FileText className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-primary" />
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg xs:text-xl sm:text-2xl font-semibold text-foreground leading-tight">
               Formulir Pengajuan Surat
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs xs:text-sm text-muted-foreground mt-0.5 xs:mt-1 leading-snug">
               Lengkapi data berikut untuk mengajukan surat keterangan
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="text-xs">
-            <Clock className="h-3 w-3 mr-1" />
-            Di proses pada hari kerja
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            <Shield className="h-3 w-3 mr-1" />
-            Data aman
-          </Badge>
-        </div>
-      </div>
+      </div> */}
 
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 sm:space-y-8"
+          className="space-y-4 xs:space-y-5 sm:space-y-6"
         >
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5 text-primary" />
+          {/* Data Pribadi Card */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3 xs:pb-4 px-3 xs:px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base xs:text-lg">
+                <User className="h-4 w-4 xs:h-5 xs:w-5 text-primary" />
                 Data Pribadi
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs xs:text-sm leading-snug">
                 Informasi identitas dan data diri pemohon
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <FormField
-                  control={form.control}
-                  name="namaWarga"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Nama Lengkap *
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Masukkan nama lengkap sesuai KTP"
-                          className="h-11 focus:ring-2 focus:ring-primary/20"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Email *
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="contoh@email.com"
-                          className="h-11 focus:ring-2 focus:ring-primary/20"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="tempatLahir"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Tempat Lahir *
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Kota/Kabupaten tempat lahir"
-                          className="h-11 focus:ring-2 focus:ring-primary/20"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="tanggalLahir"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-sm font-medium">
-                        Tanggal Lahir *
-                      </FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "h-11 w-full justify-start text-left font-normal focus:ring-2 focus:ring-primary/20",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value
-                                ? format(field.value, "dd MMMM yyyy", {
-                                    locale: id,
-                                  })
-                                : "Pilih tanggal lahir"}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          align="start"
-                          className="w-auto p-0 max-w-[calc(100vw-1rem)] sm:max-w-none"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            captionLayout="dropdown"
-                            fromYear={1900}
-                            toYear={new Date().getFullYear()}
-                            className="w-full"
+            <CardContent className="space-y-3 xs:space-y-4 sm:space-y-6 px-3 xs:px-4 sm:px-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4 sm:gap-6">
+                <div className="sm:col-span-2 grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4">
+                  <FormField
+                    control={form.control}
+                    name="namaWarga"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs xs:text-sm font-medium">
+                          Nama Lengkap *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nama lengkap sesuai KTP"
+                            className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20"
+                            {...field}
                           />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="kewarganegaraan"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Kewarganegaraan *
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-11 focus:ring-2 focus:ring-primary/20">
-                            <SelectValue placeholder="Pilih kewarganegaraan" />
-                          </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Indonesia">Indonesia</SelectItem>
-                          <SelectItem value="Asing">Asing</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="agama"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        Agama *
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs xs:text-sm font-medium">
+                          Email *
+                        </FormLabel>
                         <FormControl>
-                          <SelectTrigger className="h-11 focus:ring-2 focus:ring-primary/20">
-                            <SelectValue placeholder="Pilih agama" />
-                          </SelectTrigger>
+                          <Input
+                            type="email"
+                            placeholder="contoh@email.com"
+                            className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20"
+                            {...field}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Islam">Islam</SelectItem>
-                          <SelectItem value="Kristen">Kristen</SelectItem>
-                          <SelectItem value="Katolik">Katolik</SelectItem>
-                          <SelectItem value="Hindu">Hindu</SelectItem>
-                          <SelectItem value="Buddha">Buddha</SelectItem>
-                          <SelectItem value="Konghucu">Konghucu</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4 sm:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="tempatLahir"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs xs:text-sm font-medium">
+                          Tempat Lahir *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Kota/Kabupaten"
+                            className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="tanggalLahir"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-xs xs:text-sm font-medium">
+                          Tanggal Lahir *
+                        </FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "h-9 xs:h-10 sm:h-11 w-full justify-start text-left font-normal text-sm focus:ring-2 focus:ring-primary/20",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-1.5 xs:mr-2 h-3 w-3 xs:h-4 xs:w-4 flex-shrink-0" />
+                                <span className="truncate">
+                                  {field.value
+                                    ? format(field.value, "dd MMM yyyy", {
+                                        locale: id,
+                                      })
+                                    : "Pilih tanggal"}
+                                </span>
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-auto p-0 max-w-[calc(100vw-16px)]"
+                            sideOffset={4}
+                          >
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              captionLayout="dropdown"
+                              fromYear={1900}
+                              toYear={new Date().getFullYear()}
+                              className="w-full scale-90 xs:scale-100"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4 sm:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="kewarganegaraan"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs xs:text-sm font-medium">
+                          Kewarganegaraan *
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                              <SelectValue placeholder="Pilih" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Indonesia">Indonesia</SelectItem>
+                            <SelectItem value="Asing">Asing</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="agama"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs xs:text-sm font-medium">
+                          Agama *
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                              <SelectValue placeholder="Pilih agama" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Islam">Islam</SelectItem>
+                            <SelectItem value="Kristen">Kristen</SelectItem>
+                            <SelectItem value="Katolik">Katolik</SelectItem>
+                            <SelectItem value="Hindu">Hindu</SelectItem>
+                            <SelectItem value="Buddha">Buddha</SelectItem>
+                            <SelectItem value="Konghucu">Konghucu</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
                   name="pekerjaan"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel className="text-xs xs:text-sm font-medium">
                         Pekerjaan *
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Profesi/pekerjaan saat ini"
-                          className="h-11 focus:ring-2 focus:ring-primary/20"
+                          className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
@@ -393,41 +397,42 @@ export default function ApplicationFormServer({
                 name="alamatTinggal"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs xs:text-sm font-medium">
                       Alamat Tinggal *
                     </FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Alamat lengkap sesuai domisili saat ini"
-                        className="min-h-[100px] resize-none focus:ring-2 focus:ring-primary/20"
+                        className="min-h-[80px] xs:min-h-[100px] resize-none text-sm focus:ring-2 focus:ring-primary/20"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
             </CardContent>
           </Card>
 
+          {/* Dokumen Identitas Card */}
           <Card className="border-border/50 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <MapPin className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-3 xs:pb-4 px-3 xs:px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base xs:text-lg">
+                <MapPin className="h-4 w-4 xs:h-5 xs:w-5 text-primary" />
                 Dokumen Identitas
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs xs:text-sm leading-snug">
                 Informasi dokumen identitas yang digunakan
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <CardContent className="px-3 xs:px-4 sm:px-6">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4 sm:gap-6">
                 <FormField
                   control={form.control}
                   name="suratBuktiDiri"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">
+                      <FormLabel className="text-xs xs:text-sm font-medium">
                         Jenis Bukti Diri *
                       </FormLabel>
                       <Select
@@ -436,15 +441,15 @@ export default function ApplicationFormServer({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-11 focus:ring-2 focus:ring-primary/20">
-                            <SelectValue placeholder="Pilih jenis bukti diri" />
+                          <SelectTrigger className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                            <SelectValue placeholder="Pilih jenis" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="KTP">KTP</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
@@ -453,18 +458,18 @@ export default function ApplicationFormServer({
                   name="nomorBuktiDiri"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">
+                      <FormLabel className="text-xs xs:text-sm font-medium">
                         Nomor Bukti Diri *
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="16 digit nomor KTP"
-                          className="h-11 focus:ring-2 focus:ring-primary/20"
+                          className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20"
                           maxLength={16}
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
@@ -472,23 +477,24 @@ export default function ApplicationFormServer({
             </CardContent>
           </Card>
 
+          {/* Detail Permohonan Card */}
           <Card className="border-border/50 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <FileText className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-3 xs:pb-4 px-3 xs:px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base xs:text-lg">
+                <FileText className="h-4 w-4 xs:h-5 xs:w-5 text-primary" />
                 Detail Permohonan
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs xs:text-sm leading-snug">
                 Informasi tujuan dan keperluan surat yang diajukan
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6">
+            <CardContent className="space-y-3 xs:space-y-4 sm:space-y-6 px-3 xs:px-4 sm:px-6">
               <FormField
                 control={form.control}
                 name="tujuan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs xs:text-sm font-medium">
                       Tujuan Permohonan *
                     </FormLabel>
                     <Select
@@ -497,41 +503,41 @@ export default function ApplicationFormServer({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="h-11 focus:ring-2 focus:ring-primary/20">
-                          <SelectValue placeholder="Pilih tujuan permohonan" />
+                        <SelectTrigger className="h-9 xs:h-10 sm:h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                          <SelectValue placeholder="Pilih tujuan" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[200px] xs:max-h-[300px]">
                         <SelectItem value="Surat Keterangan Domisili">
-                          Pembuatan Surat Keterangan Domisili
+                          Surat Keterangan Domisili
                         </SelectItem>
                         <SelectItem value="Surat Keterangan Tidak Mampu">
-                          Pembuatan Surat Keterangan Tidak Mampu
+                          Surat Keterangan Tidak Mampu
                         </SelectItem>
                         <SelectItem value="Surat Izin Usaha">
-                          Pembuatan Surat Izin Usaha
+                          Surat Izin Usaha
                         </SelectItem>
                         <SelectItem value="Surat Keterangan Sehat">
-                          Pembuatan Surat Keterangan Sehat
+                          Surat Keterangan Sehat
                         </SelectItem>
                         <SelectItem value="Surat Keterangan Mahasiswa Aktif">
-                          Pembuatan Surat Keterangan Mahasiswa Aktif
+                          Surat Keterangan Mahasiswa Aktif
                         </SelectItem>
                         <SelectItem value="Surat Keterangan Kerja">
-                          Pembuatan Surat Keterangan Kerja
+                          Surat Keterangan Kerja
                         </SelectItem>
                         <SelectItem value="Surat Keterangan Penghasilan">
-                          Pembuatan Surat Keterangan Penghasilan
+                          Surat Keterangan Penghasilan
                         </SelectItem>
                         <SelectItem value="Surat Izin Keramaian">
-                          Pembuatan Surat Izin Keramaian
+                          Surat Izin Keramaian
                         </SelectItem>
                         <SelectItem value="Surat Izin Praktik">
-                          Pembuatan Surat Izin Praktik
+                          Surat Izin Praktik
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -541,43 +547,46 @@ export default function ApplicationFormServer({
                 name="keperluan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs xs:text-sm font-medium">
                       Keperluan *
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Jelaskan secara detail keperluan surat yang diajukan"
-                        className="min-h-[100px] resize-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Jelaskan secara detail keperluan surat"
+                        className="min-h-[80px] xs:min-h-[100px] resize-none text-sm focus:ring-2 focus:ring-primary/20"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
 
-              <div className="space-y-3">
-                <FormLabel className="text-sm font-medium">
+              <div className="space-y-2 xs:space-y-3">
+                <FormLabel className="text-xs xs:text-sm font-medium">
                   Berlaku Hingga
                 </FormLabel>
-                <div className="p-4 bg-muted/30 border border-border/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-md">
-                      <CalendarIcon className="h-4 w-4 text-primary" />
+                <div className="p-3 xs:p-4 bg-muted/30 border border-border/50 rounded-lg">
+                  <div className="flex items-start xs:items-center gap-2 xs:gap-3">
+                    <div className="p-1.5 xs:p-2 bg-primary/10 rounded-md flex-shrink-0">
+                      <CalendarIcon className="h-3 w-3 xs:h-4 xs:w-4 text-primary" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs xs:text-sm font-medium text-foreground">
                         {format(autoValidUntilDate, "dd MMMM yyyy", {
                           locale: id,
                         })}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Surat berlaku selama 7 hari sejak tanggal pengajuan
+                      <p className="text-xs text-muted-foreground mt-0.5 xs:mt-1 leading-snug">
+                        Surat berlaku 7 hari sejak pengajuan
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs px-2 py-1 flex-shrink-0"
+                    >
                       <Info className="h-3 w-3 mr-1" />
-                      Otomatis
+                      Auto
                     </Badge>
                   </div>
                 </div>
@@ -588,43 +597,44 @@ export default function ApplicationFormServer({
                 name="keteranganLain"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs xs:text-sm font-medium">
                       Keterangan Lain (Opsional)
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Informasi tambahan yang diperlukan (opsional)"
-                        className="min-h-[80px] resize-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Informasi tambahan (opsional)"
+                        className="min-h-[60px] xs:min-h-[80px] resize-none text-sm focus:ring-2 focus:ring-primary/20"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
             </CardContent>
           </Card>
 
-          <div className="pt-4">
+          {/* Submit Button */}
+          <div className="pt-2 xs:pt-4">
             <Button
               type="submit"
               disabled={isSubmitting || isSubmitDisabled}
-              className="w-full text-base sm:text-base font-medium bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              className="w-full h-10 xs:h-11 sm:h-12 text-sm xs:text-base font-medium bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  <span>Menyimpan Pengajuan...</span>
+                  <div className="w-4 h-4 xs:w-5 xs:h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <span className="truncate">Menyimpan...</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <Save className="w-5 h-5" />
+                  <Save className="w-4 h-4 xs:w-5 xs:h-5" />
                   <span>Simpan Pengajuan</span>
                 </div>
               )}
             </Button>
 
-            <p className="text-xs text-muted-foreground text-center mt-3 px-4">
+            <p className="text-xs text-muted-foreground text-center mt-2 xs:mt-3 px-2 xs:px-4 leading-snug">
               Dengan mengirim formulir ini, Anda menyetujui bahwa data yang
               diberikan adalah benar dan dapat dipertanggungjawabkan.
             </p>

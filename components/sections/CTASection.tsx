@@ -30,7 +30,7 @@ export default function CTASection() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mt-4 leading-none">
             <Link
-              href="/surat"
+              href="/layanan"
               className="rounded-full mx-2 flex items-center bg-black text-white px-5 py-3 text-sm hover:bg-stone-900 transition-colors duration-200 group"
             >
               Ajukan Sekarang

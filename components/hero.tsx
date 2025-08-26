@@ -144,7 +144,7 @@ export default function Hero() {
                 className="mb-4 rounded-full px-4 py-1.5 text-sm font-medium"
                 variant="secondary"
               >
-                Launching Soon
+                Sisurat Singopuran
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                 Layanan Surat Keterangan Desa Singopuran
@@ -157,7 +157,7 @@ export default function Hero() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  href="/surat"
+                  href="/layanan"
                   className="rounded-full mx-2 flex items-center bg-black text-white px-4 py-3 text-sm hover:bg-stone-800 transition-colors duration-200 group"
                 >
                   Ajukan Sekarang
