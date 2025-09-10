@@ -20,6 +20,7 @@ import {
   Clock,
   Wallet,
 } from "lucide-react";
+import { useState } from "react";
 
 const MotionCard = dynamic(() =>
   import("framer-motion").then((mod) => mod.motion.div)
@@ -94,6 +95,7 @@ const steps = [
 ];
 
 export default function PanduanSuratPage() {
+  const [activeStep, setActiveStep] = useState(1);
   const HowToJSONLD = {
     "@context": "https://schema.org",
     "@type": "HowTo",
@@ -136,7 +138,7 @@ export default function PanduanSuratPage() {
         </div>
 
         {/* Info ringkas: waktu & biaya */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {/* <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -163,27 +165,64 @@ export default function PanduanSuratPage() {
               </p>
             </CardContent>
           </Card>
+        </div> */}
+
+        {/* Ringkasan Langkah-langkah (Overview) */}
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-4 sm:text-xl">
+            Tahapan Pengajuan
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            {steps.map((step) => {
+              const Icon = step.icon;
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveStep(step.id)}
+                  className={`flex flex-col items-center p-3 rounded-lg border text-center transition-colors ${
+                    activeStep === step.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card hover:bg-accent border-border"
+                  }`}
+                >
+                  <div
+                    className={`rounded-full p-2 mb-2 ${
+                      activeStep === step.id
+                        ? "bg-primary-foreground/20"
+                        : "bg-primary/10"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-5 w-5 ${
+                        activeStep === step.id
+                          ? "text-primary-foreground"
+                          : "text-primary"
+                      }`}
+                    />
+                  </div>
+                  <span className="text-xs font-medium">Langkah {step.id}</span>
+                  <span className="text-xs mt-1">{step.title}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Langkah-langkah */}
-        <ol className="relative mt-8 space-y-6 border-l pl-6 md:mt-10">
-          {steps.map((s, i) => {
-            const Icon = s.icon;
+        {/* Detail Langkah yang Dipilih */}
+        <div className="mb-8">
+          {steps.map((step) => {
+            if (step.id !== activeStep) return null;
+            const Icon = step.icon;
+
             return (
               <MotionCard
-                key={s.id}
-                id={`step-${s.id}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.35 }}
-                transition={{ duration: 0.35, delay: i * 0.05 }}
-                className="group scroll-mt-24"
+                key={step.id}
+                id={`step-${step.id}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="scroll-mt-24"
               >
-                {/* bullet */}
-                <span
-                  aria-hidden
-                  className="absolute -left-[9px] mt-2 block h-4 w-4 rounded-full border-2 border-primary bg-background"
-                />
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between gap-3 pb-4">
                     <div className="flex flex-wrap items-center gap-3">
@@ -191,28 +230,28 @@ export default function PanduanSuratPage() {
                         variant="secondary"
                         className="rounded-full px-3 py-1"
                       >
-                        Step {s.id}
+                        Langkah {step.id}
                       </Badge>
                       <CardTitle className="text-base sm:text-lg">
-                        {s.title}
+                        {step.title}
                       </CardTitle>
                     </div>
                     <Icon className="h-5 w-5 text-primary/80" />
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <CardDescription className="text-sm leading-relaxed sm:text-base">
-                      {s.desc}
+                      {step.desc}
                     </CardDescription>
 
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <Badge variant="outline">{T.requirements}</Badge>
-                      {s.docs.map((d, idx) => (
+                      {step.docs.map((doc, idx) => (
                         <Badge
                           key={idx}
                           variant="outline"
                           className="bg-muted/30"
                         >
-                          {d}
+                          {doc}
                         </Badge>
                       ))}
                     </div>
@@ -220,11 +259,11 @@ export default function PanduanSuratPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground sm:gap-6">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        <span>Waktu: {s.time}</span>
+                        <span>Waktu: {step.time}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Wallet className="h-4 w-4" />
-                        <span>Biaya: {s.fee}</span>
+                        <span>Biaya: {step.fee}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -232,7 +271,28 @@ export default function PanduanSuratPage() {
               </MotionCard>
             );
           })}
-        </ol>
+        </div>
+
+        {/* Navigasi Langkah */}
+        <div className="flex justify-between mb-8">
+          <Button
+            variant="outline"
+            onClick={() => setActiveStep(activeStep > 1 ? activeStep - 1 : 1)}
+            disabled={activeStep === 1}
+          >
+            Sebelumnya
+          </Button>
+          <Button
+            onClick={() =>
+              setActiveStep(
+                activeStep < steps.length ? activeStep + 1 : steps.length
+              )
+            }
+            disabled={activeStep === steps.length}
+          >
+            Selanjutnya
+          </Button>
+        </div>
 
         {/* FAQ */}
         <div className="mt-8 md:mt-10">

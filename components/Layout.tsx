@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Head from "next/head";
@@ -130,10 +131,25 @@ export default function Layout({
             href="/"
             className="flex items-center gap-2 font-bold leading-none"
           >
-            <div className="size-7 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
-              SE
+            <div className="flex items-center gap-1">
+              <div className="h-10 w-10 relative">
+                <Image
+                  src="/icon-sukoharjo.png"
+                  alt="Logo Singopuran"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold whitespace-nowrap">
+                  Sisurat Singopuran
+                </span>
+                <span className="text-sm font-semibold whitespace-nowrap">
+                  Kabupaten Sukoharjo
+                </span>
+              </div>
             </div>
-            <span className="text-sm font-semibold">Singopuran</span>
           </Link>
           <nav className="hidden md:flex gap-8">
             <Link

@@ -8,9 +8,12 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Esurat Singopuran",
+  title: "Sisurat Singopuran",
   description:
     "Membantu melayani anda dalam pembuatan surat keterangan desa lebih cepat",
+  icons: {
+    icon: "/icon-sukoharjo.png",
+  },
 };
 
 const geistSans = Inter({

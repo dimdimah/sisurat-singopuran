@@ -1,135 +1,193 @@
 import type React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 import type { ApplicationData } from "@/app/actions";
 
 const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: "#FFFFFF",
-    padding: 30, // Reduced from 40
+    padding: 30,
     fontFamily: "Helvetica",
-    fontSize: 10, // Reduced from 11
+    fontSize: 10,
     width: 612,
     height: 936,
   },
 
+  // Header dengan layout untuk logo
   header: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15, // Reduced from 25
+    marginBottom: 2, // rapetin jarak ke garis
+    paddingBottom: 5,
+  },
+
+  doubleLine: {
+    borderBottom: 1,
+    borderBottomColor: "#000000",
+    marginTop: 2,
+    marginBottom: 15,
+  },
+  boldLine: {
     borderBottom: 2,
     borderBottomColor: "#000000",
-    paddingBottom: 10, // Reduced from 15
   },
+
+  // Container untuk logo di kiri (fixed path)
+  logoContainer: {
+    width: 80,
+    alignItems: "center",
+    marginRight: 15,
+  },
+
+  // Logo style (using Sukoharjo icon)
+  logo: {
+    width: 60,
+    height: 60,
+    objectFit: "contain",
+  },
+
+  // Container untuk text header di tengah
+  headerTextContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+
   headerTitle: {
-    fontSize: 13, // Reduced from 14
+    fontSize: 13,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 1,
   },
   headerSubtitle: {
-    fontSize: 11, // Reduced from 12
+    fontSize: 11,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 1,
   },
   headerVillage: {
-    fontSize: 12, // Reduced from 13
+    fontSize: 12,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 5, // Reduced from 8
+    marginBottom: 5,
     textDecoration: "underline",
   },
   headerAddress: {
-    fontSize: 8, // Reduced from 9
+    fontSize: 8,
     textAlign: "center",
     color: "#333333",
   },
 
-  documentInfo: {
-    marginBottom: 12, // Reduced from 20
-  },
-  documentNumber: {
-    fontSize: 9, // Reduced from 10
-    marginBottom: 8, // Reduced from 15
+  // Placeholder untuk logo kanan (opsional)
+  logoRightContainer: {
+    width: 80,
+    alignItems: "center",
+    marginLeft: 15,
   },
 
-  // Title section - Compressed
+  // Alternative header layout - logo di atas text
+  headerCentered: {
+    alignItems: "center",
+    marginBottom: 15,
+    borderBottom: 2,
+    borderBottomColor: "#000000",
+    paddingBottom: 10,
+  },
+
+  logoTop: {
+    width: 70,
+    height: 70,
+    objectFit: "contain",
+    marginBottom: 10,
+  },
+
+  // Rest of styles remain the same...
+  documentInfo: {
+    marginBottom: 12,
+  },
+  documentNumber: {
+    fontSize: 9,
+    marginBottom: 8,
+  },
+
   titleSection: {
     alignItems: "center",
-    marginBottom: 15, // Reduced from 25
+    marginBottom: 15,
   },
   documentTitle: {
-    fontSize: 14, // Reduced from 16
+    fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
     textDecoration: "underline",
-    marginBottom: 3, // Reduced from 5
+    marginBottom: 3,
   },
   documentSubtitle: {
-    fontSize: 11, // Reduced from 12
+    fontSize: 11,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 8, // Reduced from 15
+    marginBottom: 8,
   },
   letterNumber: {
-    fontSize: 10, // Reduced from 11
+    fontSize: 10,
     textAlign: "center",
-    marginBottom: 12, // Reduced from 20
+    marginBottom: 12,
   },
 
-  // Content section - Compressed
   contentIntro: {
-    fontSize: 10, // Reduced from 11
+    fontSize: 10,
     textAlign: "center",
-    marginBottom: 12, // Reduced from 20
-    lineHeight: 1.2, // Reduced from 1.4
+    marginBottom: 12,
+    lineHeight: 1.2,
   },
 
-  // Form items - Optimized for single page
   formSection: {
-    marginBottom: 15, // Reduced from 35
+    marginBottom: 15,
   },
   formItem: {
     flexDirection: "row",
-    marginBottom: 6, // Reduced from 10
+    marginBottom: 6,
     alignItems: "flex-start",
   },
   formNumber: {
-    width: 20, // Reduced from 25
-    fontSize: 10, // Reduced from 11
+    width: 20,
+    fontSize: 10,
   },
   formLabel: {
-    width: 130, // Reduced from 140
-    fontSize: 10, // Reduced from 11
+    width: 130,
+    fontSize: 10,
   },
   formColon: {
-    width: 8, // Reduced from 10
-    fontSize: 10, // Reduced from 11
+    width: 8,
+    fontSize: 10,
   },
   formValue: {
     flex: 1,
-    fontSize: 10, // Reduced from 11
-    lineHeight: 1.2, // Reduced from 1.3
+    fontSize: 10,
+    lineHeight: 1.2,
   },
 
-  // Closing statement - Compressed
   closingStatement: {
-    fontSize: 10, // Reduced from 11
+    fontSize: 10,
     textAlign: "justify",
-    marginBottom: 20, // Reduced from 50
-    lineHeight: 1.3, // Reduced from 1.4
+    marginBottom: 20,
+    lineHeight: 1.3,
   },
 
-  // Signature section - Optimized
   signatureSection: {
-    marginTop: 15, // Reduced from 40
-    flex: 1, // Use remaining space
+    marginTop: 15,
+    flex: 1,
     justifyContent: "space-between",
   },
   signatureRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 40, // Reduced from 100
+    marginBottom: 40,
   },
   signatureLeft: {
     width: "45%",
@@ -140,16 +198,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   signatureDate: {
-    fontSize: 10, // Reduced from 11
-    marginBottom: 3, // Reduced from 5
+    fontSize: 10,
+    marginBottom: 3,
   },
   signatureTitle: {
-    fontSize: 10, // Reduced from 11
-    marginBottom: 35, // Reduced from 70
+    fontSize: 10,
+    marginBottom: 35,
     textAlign: "center",
   },
   signatureName: {
-    fontSize: 10, // Reduced from 11
+    fontSize: 10,
     fontWeight: "bold",
     textAlign: "center",
     borderBottom: 1,
@@ -158,50 +216,47 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   signaturePosition: {
-    fontSize: 9, // Reduced from 10
+    fontSize: 9,
     textAlign: "center",
-    marginTop: 3, // Reduced from 5
+    marginTop: 3,
   },
 
-  // Compact additional signature
   additionalSignature: {
     alignItems: "center",
-    marginTop: 20, // Reduced from 50
+    marginTop: 20,
   },
   additionalSignatureLine: {
     borderBottom: 1,
     borderBottomColor: "#000000",
-    width: 180, // Reduced from 200
-    marginBottom: 3, // Reduced from 5
+    width: 180,
+    marginBottom: 3,
+    marginTop: 50, // Jarak untuk area tanda tangan
   },
   nipText: {
-    fontSize: 9, // Reduced from 10
+    fontSize: 9,
     textAlign: "center",
   },
 
-  // Footer - Fixed at bottom
   footer: {
-    fontSize: 8, // Reduced from 9
+    fontSize: 8,
     textAlign: "center",
     color: "#666666",
     borderTop: 1,
     borderTopColor: "#CCCCCC",
-    paddingTop: 8, // Reduced from 10
+    paddingTop: 8,
     marginTop: 10,
   },
 
-  // Watermark - Smaller
   watermark: {
     position: "absolute",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%) rotate(-45deg)",
-    fontSize: 50, // Reduced from 60
-    color: "#f8f8f8", // Lighter
+    fontSize: 50,
+    color: "#f8f8f8",
     zIndex: -1,
   },
 
-  // Utility classes for spacing control
   smallSpacer: {
     height: 8,
   },
@@ -288,34 +343,59 @@ export const ApplicationPDFDocument: React.FC<PDFDocumentProps> = ({
     }
   };
 
+  // Render header dengan logo di kiri
+  const renderHeader = () => {
+    return (
+      <>
+        <View style={styles.header}>
+          {/* Logo Kiri */}
+          <View style={styles.logoContainer}>
+            <Image src="./public/icon-sukoharjo.png" style={styles.logo} />
+          </View>
+
+          {/* Text Header Tengah */}
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>
+              PEMERINTAH KABUPATEN SUKOHARJO
+            </Text>
+            <Text style={styles.headerSubtitle}>KECAMATAN KARTASURA</Text>
+            <Text style={styles.headerVillage}>DESA SINGOPURAN</Text>
+            <Text style={styles.headerAddress}>
+              Jalan Adi Sumarmo Nomor 110 Kartasura Telp (0271) 791408 Kode Pos
+              57164
+            </Text>
+          </View>
+
+          {/* Ruang kosong kanan */}
+          <View style={styles.logoRightContainer}></View>
+        </View>
+
+        {/* Garis double */}
+        <View style={styles.boldLine}></View>
+        <View style={styles.doubleLine}></View>
+      </>
+    );
+  };
+
   return (
     <Document>
-      {/* F4/Legal size page - Single page optimized */}
       <Page size={[612, 936]} style={styles.page}>
         {/* Watermark */}
         {application.status !== "Approved" && (
           <Text style={styles.watermark}>DRAFT</Text>
         )}
 
-        {/* Header - Compact */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>PEMERINTAH KABUPATEN SUKOHARJO</Text>
-          <Text style={styles.headerSubtitle}>KECAMATAN KARTASURA</Text>
-          <Text style={styles.headerVillage}>DESA SINGOPURAN</Text>
-          <Text style={styles.headerAddress}>
-            Jalan Adi Sumarmo Nomor 110 Kartasura Telp (0271) 791408 Kode Pos
-            57164
-          </Text>
-        </View>
+        {/* Header dengan Logo */}
+        {renderHeader()}
 
-        {/* Document Number - Compact */}
+        {/* Document Number */}
         <View style={styles.documentInfo}>
           <Text style={styles.documentNumber}>
             No. Kode Desa / Kelurahan : 33.11.12.0009
           </Text>
         </View>
 
-        {/* Title Section - Compact */}
+        {/* Title Section */}
         <View style={styles.titleSection}>
           <Text style={styles.documentTitle}>{getLetterTitle(letterType)}</Text>
           <Text style={styles.documentSubtitle}>
@@ -333,10 +413,9 @@ export const ApplicationPDFDocument: React.FC<PDFDocumentProps> = ({
           Yang bertanda tangan dibawah ini menerangkan bahwa :
         </Text>
 
-        {/* Small spacer */}
         <View style={styles.smallSpacer} />
 
-        {/* Form Section - Compact */}
+        {/* Form Section */}
         <View style={styles.formSection}>
           <View style={styles.formItem}>
             <Text style={styles.formNumber}>1.</Text>
@@ -419,7 +498,6 @@ export const ApplicationPDFDocument: React.FC<PDFDocumentProps> = ({
           )}
         </View>
 
-        {/* Medium spacer */}
         <View style={styles.mediumSpacer} />
 
         {/* Closing Statement */}
@@ -427,11 +505,12 @@ export const ApplicationPDFDocument: React.FC<PDFDocumentProps> = ({
           {getClosingStatement(letterType)}
         </Text>
 
-        {/* Signature Section - Optimized to fit */}
+        {/* Signature Section */}
         <View style={styles.signatureSection}>
           <View style={styles.signatureRow}>
             <View style={styles.signatureLeft}>
               <Text style={styles.signatureTitle}>Tanda tangan pemegang</Text>
+              <Text style={styles.signatureDate}></Text>
               <Text style={styles.signatureName}>{application.namaWarga}</Text>
             </View>
 
@@ -440,28 +519,22 @@ export const ApplicationPDFDocument: React.FC<PDFDocumentProps> = ({
                 Singopuran, {getCurrentDate()}
               </Text>
               <Text style={styles.signatureTitle}>
-                A.n Kepala Desa Singopuran
-              </Text>
-              <Text style={styles.signatureTitle}>
-                Sekretaris Desa Singopuran
+                A.n Sekretaris Desa Singopuran
               </Text>
               <Text style={styles.signatureName}>SETIAWAN, S.Pd</Text>
             </View>
           </View>
 
-          {/* Compact additional signature */}
           <View style={styles.additionalSignature}>
-            <Text style={styles.signaturePosition}>
-              Mengetahui Camat Kartasura
-            </Text>
-            <View style={styles.mediumSpacer} />
+            <Text style={styles.signaturePosition}>Mengetahui</Text>
+            <Text style={styles.signaturePosition}>Camat Kartasura</Text>
+            {/* Area kosong untuk tanda tangan */}
             <View style={styles.additionalSignatureLine} />
             <Text style={styles.nipText}>
               NIP. ................................
             </Text>
           </View>
 
-          {/* Footer */}
           <View style={styles.footer}>
             <Text>
               Catatan: Apabila ruangan ini tidak cukup, harus ditulis
@@ -478,7 +551,7 @@ export const ApplicationPDFDocument: React.FC<PDFDocumentProps> = ({
   );
 };
 
-// Template untuk surat yang berbeda
+// Template untuk surat yang berbeda - simplified
 export const DomicilePDFDocument: React.FC<{
   application: ApplicationData;
 }> = ({ application }) => (
@@ -491,18 +564,45 @@ export const BusinessPDFDocument: React.FC<{
   <ApplicationPDFDocument application={application} letterType="business" />
 );
 
-export const PovertyPDFDocument: React.FC<{ application: ApplicationData }> = ({
-  application,
-}) => <ApplicationPDFDocument application={application} letterType="poverty" />;
+export const PovertyPDFDocument: React.FC<{
+  application: ApplicationData;
+}> = ({ application }) => (
+  <ApplicationPDFDocument application={application} letterType="poverty" />
+);
 
-export const BirthPDFDocument: React.FC<{ application: ApplicationData }> = ({
-  application,
-}) => <ApplicationPDFDocument application={application} letterType="birth" />;
+export const BirthPDFDocument: React.FC<{
+  application: ApplicationData;
+}> = ({ application }) => (
+  <ApplicationPDFDocument application={application} letterType="birth" />
+);
 
-export const DeathPDFDocument: React.FC<{ application: ApplicationData }> = ({
-  application,
-}) => <ApplicationPDFDocument application={application} letterType="death" />;
+export const DeathPDFDocument: React.FC<{
+  application: ApplicationData;
+}> = ({ application }) => (
+  <ApplicationPDFDocument application={application} letterType="death" />
+);
 
-export const GeneralPDFDocument: React.FC<{ application: ApplicationData }> = ({
-  application,
-}) => <ApplicationPDFDocument application={application} letterType="general" />;
+export const GeneralPDFDocument: React.FC<{
+  application: ApplicationData;
+}> = ({ application }) => (
+  <ApplicationPDFDocument application={application} letterType="general" />
+);
+
+// Utility function untuk convert image ke base64 (jika diperlukan)
+export const convertImageToBase64 = async (
+  imageUrl: string
+): Promise<string> => {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error("Error converting image to base64:", error);
+    return "";
+  }
+};

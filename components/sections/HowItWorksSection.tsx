@@ -5,6 +5,7 @@ const MotionCard = dynamic(() =>
   import("framer-motion").then((mod) => mod.motion.div)
 );
 import { Badge } from "@/components/ui/badge";
+import { BadgeCheck } from "lucide-react";
 
 export default function HowItWorksSection() {
   return (
@@ -20,9 +21,10 @@ export default function HowItWorksSection() {
           className="flex flex-col items-center justify-center space-y-4 text-center mb-16"
         >
           <Badge
-            className="rounded-full px-4 py-1.5 text-sm font-medium"
+            className="rounded-full px-4 py-1.5 text-sm font-medium gap-1"
             variant="secondary"
           >
+            <BadgeCheck size={18} />
             Cara Kerja
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">

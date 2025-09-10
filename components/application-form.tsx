@@ -35,7 +35,6 @@ import {
   MapPin,
   FileText,
   Shield,
-  Clock,
   Info,
 } from "lucide-react";
 import { format, addDays } from "date-fns";
@@ -51,7 +50,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
+// Memperbarui schema tanpa captcha
 const formSchema = z.object({
   namaWarga: z.string().min(1, "Nama lengkap harus diisi"),
   email: z.string().email("Email tidak valid").min(1, "Email harus diisi"),
@@ -69,6 +70,9 @@ const formSchema = z.object({
   keperluan: z.string().min(1, "Keperluan harus diisi"),
   berlakuSurat: z.date().optional(),
   keteranganLain: z.string().optional(),
+  agreeToTerms: z.boolean().refine((val) => val === true, {
+    message: "Anda harus menyetujui syarat dan ketentuan",
+  }),
 });
 
 interface ApplicationFormServerProps {
@@ -97,7 +101,9 @@ export default function ApplicationFormServer({
       tujuan: "",
       keperluan: "",
       keteranganLain: "",
+      tanggalLahir: undefined,
       berlakuSurat: autoValidUntilDate,
+      agreeToTerms: false,
     },
   });
 
@@ -115,7 +121,7 @@ export default function ApplicationFormServer({
         if (value instanceof Date) {
           formData.append(key, value.toISOString().split("T")[0]);
         } else if (value !== undefined && value !== null) {
-          formData.append(key, value);
+          formData.append(key, value.toString());
         }
       });
 
@@ -148,6 +154,7 @@ export default function ApplicationFormServer({
           keteranganLain: "",
           tanggalLahir: undefined,
           berlakuSurat: addDays(new Date(), 7),
+          agreeToTerms: false,
         });
       }
     } catch (error) {
@@ -163,22 +170,6 @@ export default function ApplicationFormServer({
 
   return (
     <div className="w-full max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 lg:px-6">
-      {/* <div className="mb-4 xs:mb-6 sm:mb-8">
-        <div className="flex items-start xs:items-center gap-2 xs:gap-3 mb-3 xs:mb-4">
-          <div className="p-1.5 xs:p-2 bg-primary/10 rounded-lg flex-shrink-0">
-            <FileText className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg xs:text-xl sm:text-2xl font-semibold text-foreground leading-tight">
-              Formulir Pengajuan Surat
-            </h2>
-            <p className="text-xs xs:text-sm text-muted-foreground mt-0.5 xs:mt-1 leading-snug">
-              Lengkapi data berikut untuk mengajukan surat keterangan
-            </p>
-          </div>
-        </div>
-      </div> */}
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -517,24 +508,6 @@ export default function ApplicationFormServer({
                         <SelectItem value="Surat Izin Usaha">
                           Surat Izin Usaha
                         </SelectItem>
-                        <SelectItem value="Surat Keterangan Sehat">
-                          Surat Keterangan Sehat
-                        </SelectItem>
-                        <SelectItem value="Surat Keterangan Mahasiswa Aktif">
-                          Surat Keterangan Mahasiswa Aktif
-                        </SelectItem>
-                        <SelectItem value="Surat Keterangan Kerja">
-                          Surat Keterangan Kerja
-                        </SelectItem>
-                        <SelectItem value="Surat Keterangan Penghasilan">
-                          Surat Keterangan Penghasilan
-                        </SelectItem>
-                        <SelectItem value="Surat Izin Keramaian">
-                          Surat Izin Keramaian
-                        </SelectItem>
-                        <SelectItem value="Surat Izin Praktik">
-                          Surat Izin Praktik
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-xs" />
@@ -614,12 +587,42 @@ export default function ApplicationFormServer({
             </CardContent>
           </Card>
 
+          {/* Persetujuan Checkbox */}
+          <Card className="border-none">
+            <CardContent className="p-4 xs:p-6">
+              <FormField
+                control={form.control}
+                name="agreeToTerms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-xs xs:text-sm font-normal cursor-pointer">
+                        Saya menyetujui bahwa data yang diberikan adalah benar
+                        dan dapat dipertanggungjawabkan.
+                      </FormLabel>
+                      <FormMessage className="text-xs" />
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
           {/* Submit Button */}
           <div className="pt-2 xs:pt-4">
             <Button
               type="submit"
-              disabled={isSubmitting || isSubmitDisabled}
-              className="w-full h-10 xs:h-11 sm:h-12 text-sm xs:text-base font-medium bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              disabled={
+                isSubmitting || isSubmitDisabled || !form.watch("agreeToTerms")
+              }
+              className="w-full h-10 xs:h-11 sm:h-12 text-sm xs:text-base font-medium bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
@@ -633,11 +636,6 @@ export default function ApplicationFormServer({
                 </div>
               )}
             </Button>
-
-            <p className="text-xs text-muted-foreground text-center mt-2 xs:mt-3 px-2 xs:px-4 leading-snug">
-              Dengan mengirim formulir ini, Anda menyetujui bahwa data yang
-              diberikan adalah benar dan dapat dipertanggungjawabkan.
-            </p>
           </div>
         </form>
       </Form>

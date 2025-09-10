@@ -6,6 +6,7 @@ const MotionCard = dynamic(() =>
 );
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { UserCheckIcon } from "lucide-react";
 
 export default function FeaturesSection({ features, container, item }: any) {
   return (
@@ -19,9 +20,10 @@ export default function FeaturesSection({ features, container, item }: any) {
           className="flex flex-col items-center justify-center space-y-4 text-center mb-12"
         >
           <Badge
-            className="rounded-full px-4 py-1.5 text-sm font-medium"
+            className="rounded-full px-4 py-1.5 text-sm font-medium gap-1"
             variant="secondary"
           >
+            <UserCheckIcon size={18} />
             Layanan
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
