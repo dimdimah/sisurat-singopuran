@@ -9,7 +9,15 @@ const MotionCard = dynamic(() =>
   import("framer-motion").then((mod) => mod.motion.div)
 );
 
-import { Check, ClipboardList, ArrowRight } from "lucide-react";
+import {
+  Check,
+  ClipboardList,
+  ArrowRight,
+  Tag,
+  Radar,
+  HandshakeIcon,
+  UserCheckIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const Zap = dynamic(() => import("lucide-react").then((mod) => mod.Zap), {
@@ -141,9 +149,10 @@ export default function Hero() {
               className="text-center max-w-3xl mx-auto mb-12"
             >
               <Badge
-                className="mb-4 rounded-full px-4 py-1.5 text-sm font-medium"
+                className="mb-4 rounded-full px-4 py-1.5 text-sm font-medium gap-1"
                 variant="secondary"
               >
+                <Radar size={18} />
                 Sisurat Singopuran
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -193,9 +202,9 @@ export default function Hero() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative mx-auto max-w-5xl"
             >
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-border/40 bg-gradient-to-b from-background to-muted/20">
+              {/* <div className="rounded-xl overflow-hidden shadow-2xl border border-border/40 bg-gradient-to-b from-background to-muted/20">
                 <Image
-                  src="/image-bg.png"
+                  src="/"
                   width={1280}
                   height={720}
                   alt="Sisurat Singopuran Dashboard"
@@ -204,7 +213,7 @@ export default function Hero() {
                 />
 
                 <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10 dark:ring-white/10"></div>
-              </div>
+              </div> */}
               <div className="absolute -bottom-6 -right-6 -z-10 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 blur-3xl opacity-70"></div>
               <div className="absolute -top-6 -left-6 -z-10 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-secondary/30 to-primary/30 blur-3xl opacity-70"></div>
             </MotionCard>

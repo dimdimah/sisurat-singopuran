@@ -53,7 +53,7 @@ export interface ApplicationData {
   updated_at?: string;
 }
 
-// fUNC SEND EMAIL NOTIF
+// FUNGSI KIRIM NOTIF EMAIL
 async function sendStatusNotificationEmail(
   application: ApplicationData,
   newStatus: string
@@ -71,7 +71,7 @@ async function sendStatusNotificationEmail(
     }
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL}/api/send-email`,
+      `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/send-email`,
       {
         method: "POST",
         headers: {
@@ -83,12 +83,61 @@ async function sendStatusNotificationEmail(
           namaWarga: application.namaWarga,
           tujuan: application.tujuan,
           applicationId: application.id,
+          nomorSurat: application.nomorSurat,
         }),
       }
     );
 
     if (!response.ok) {
       console.error("Failed to send email notification");
+      return;
+    }
+
+    if (newStatus === "Approved") {
+      console.log(
+        `Scheduling pickup ready email for application #${application.id} in 1 hour...`
+      );
+
+      setTimeout(async () => {
+        try {
+          console.log(
+            `Sending pickup ready email for application #${application.id}...`
+          );
+
+          const pickupResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/send-email`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                type: "ready_pickup",
+                email: application.email,
+                namaWarga: application.namaWarga,
+                tujuan: application.tujuan,
+                applicationId: application.id,
+                nomorSurat: application.nomorSurat,
+              }),
+            }
+          );
+
+          if (pickupResponse.ok) {
+            console.log(
+              `✅ Pickup ready email sent successfully for application #${application.id}`
+            );
+          } else {
+            console.error(
+              `❌ Failed to send pickup ready email for application #${application.id}`
+            );
+          }
+        } catch (error) {
+          console.error(
+            `❌ Error sending pickup ready email for application #${application.id}:`,
+            error
+          );
+        }
+      }, 3000); //3600000
     }
   } catch (error) {
     console.error("Error sending email notification:", error);

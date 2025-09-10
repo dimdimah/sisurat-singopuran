@@ -61,30 +61,10 @@ export default function Page() {
             </div>
 
             <Card className="border-0">
-              <CardContent className="p-6 pt-0">
-                <ApplicationFormServer isSubmitDisabled={!agreedToTerms} />
+              <CardContent className="p-0">
+                {/* Hapus prop isSubmitDisabled karena sekarang dihandle di dalam form */}
+                <ApplicationFormServer isSubmitDisabled={false} />
               </CardContent>
-              <CardFooter className="px-6 py-4 flex flex-col items-start gap-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={agreedToTerms}
-                    onCheckedChange={(checked) =>
-                      setAgreedToTerms(checked === true)
-                    }
-                  />
-                  <Label
-                    htmlFor="terms"
-                    className="text-sm text-muted-foreground"
-                  >
-                    Saya menyetujui{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      syarat dan ketentuan
-                    </a>{" "}
-                    yang berlaku
-                  </Label>
-                </div>
-              </CardFooter>
             </Card>
 
             <Card className="border-border/50 bg-muted/30">

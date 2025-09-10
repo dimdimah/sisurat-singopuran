@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 export default function FooterSection() {
   return (
@@ -8,12 +9,30 @@ export default function FooterSection() {
       <div className="container flex flex-col gap-8 px-4 py-10 md:px-6 lg:py-16">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-16">
           <div className="space-y-4 max-w-md">
-            <div className="flex items-center gap-2 font-bold">
-              <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
-                SE
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-bold leading-none"
+            >
+              <div className="flex items-center gap-1">
+                <div className="h-10 w-10 relative">
+                  <Image
+                    src="/icon-sukoharjo.png"
+                    alt="Logo Singopuran"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold whitespace-nowrap">
+                    Sisurat Singopuran
+                  </span>
+                  <span className="text-sm font-semibold whitespace-nowrap">
+                    Kabupaten Sukoharjo
+                  </span>
+                </div>
               </div>
-              <span>Sisurat Singopuran</span>
-            </div>
+            </Link>
             <p className="text-sm text-muted-foreground">
               Urus surat keterangan desa tanpa perlu antri. Layanan digital
               untuk mempermudah warga Desa Singopuran.
@@ -21,7 +40,7 @@ export default function FooterSection() {
             <div className="flex gap-4">{/* Social media links */}</div>
           </div>
           <div className="space-y-4">
-            <h4 className="text-sm font-bold">Perusahaan</h4>
+            <h4 className="text-sm font-bold">Singopuran</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
