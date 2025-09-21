@@ -54,7 +54,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 // Memperbarui schema tanpa captcha
 const formSchema = z.object({
-  namaWarga: z.string().min(1, "Nama lengkap harus diisi"),
+  namaWarga: z
+    .string()
+    .min(1, "Nama lengkap harus diisi")
+    .regex(/^[a-zA-Z\s]+$/, "Nama hanya boleh berisi huruf dan spasi"),
   email: z.string().email("Email tidak valid").min(1, "Email harus diisi"),
   tempatLahir: z.string().min(1, "Tempat lahir harus diisi"),
   tanggalLahir: z.date({
@@ -65,7 +68,13 @@ const formSchema = z.object({
   pekerjaan: z.string().min(1, "Pekerjaan harus diisi"),
   alamatTinggal: z.string().min(1, "Alamat tinggal harus diisi"),
   suratBuktiDiri: z.string().min(1, "Jenis bukti diri harus dipilih"),
-  nomorBuktiDiri: z.string().min(1, "Nomor bukti diri harus diisi"),
+  nomorBuktiDiri: z
+    .string()
+    .min(16, "Nomor bukti diri harus 16 digit")
+    .regex(/^\d+$/, "Nomor bukti diri hanya boleh berisi angka")
+    .refine((val) => val.length === 16, {
+      message: "Nomor bukti diri harus tepat 16 digit",
+    }),
   tujuan: z.string().min(1, "Tujuan permohonan harus dipilih"),
   keperluan: z.string().min(1, "Keperluan harus diisi"),
   berlakuSurat: z.date().optional(),
@@ -502,8 +511,8 @@ export default function ApplicationFormServer({
                         <SelectItem value="Surat Keterangan Domisili">
                           Surat Keterangan Domisili
                         </SelectItem>
-                        <SelectItem value="Surat Keterangan Tidak Mampu">
-                          Surat Keterangan Tidak Mampu
+                        <SelectItem value="Surat Keterangan Kehilangan">
+                          Surat Keterangan Kehilangan
                         </SelectItem>
                         <SelectItem value="Surat Izin Usaha">
                           Surat Izin Usaha
